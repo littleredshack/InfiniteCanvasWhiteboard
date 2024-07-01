@@ -1,3 +1,5 @@
+// canvas.js
+
 // Get our canvas element
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
@@ -7,24 +9,27 @@ document.oncontextmenu = function () {
     return false;
 }
 
-// Define rectangles with names
+// Define rectangles with children and names
 const rectangles = [
     {
         x: 100, y: 100, width: 200, height: 150, radius: 10, hover: false, name: 'Node 1', children: [
-            { x: 120, y: 120, width: 60, height: 40, radius: 5, hover: false, name: 'Node 2' },
-            { x: 200, y: 150, width: 60, height: 40, radius: 5, hover: false, name: 'Node 3' }
+            { x: 120, y: 120, width: 60, height: 40, radius: 5, hover: false, name: 'Node 2', children: [] },
+            { x: 200, y: 150, width: 60, height: 40, radius: 5, hover: false, name: 'Node 3', children: [
+                { x: 220, y: 170, width: 40, height: 30, radius: 5, hover: false, name: 'Node 7', children: [
+                    { x: 230, y: 180, width: 30, height: 20, radius: 5, hover: false, name: 'Node 8', children: [] }
+                ] }
+            ] }
         ]
     },
     {
         x: 400, y: 300, width: 200, height: 150, radius: 10, hover: false, name: 'Node 4', children: [
-            { x: 420, y: 320, width: 60, height: 40, radius: 5, hover: false, name: 'Node 5' },
-            { x: 500, y: 350, width: 60, height: 40, radius: 5, hover: false, name: 'Node 6' }
+            { x: 420, y: 320, width: 60, height: 40, radius: 5, hover: false, name: 'Node 5', children: [
+                { x: 430, y: 330, width: 40, height: 30, radius: 5, hover: false, name: 'Node 9', children: [] }
+            ] },
+            { x: 500, y: 350, width: 60, height: 40, radius: 5, hover: false, name: 'Node 6', children: [] }
         ]
     }
 ];
-
-let selectedRect = null;
-let selectedChild = null;
 
 // Distance from origin
 let offsetX = 0;
@@ -53,33 +58,43 @@ function trueWidth() {
     return canvas.clientWidth / scale;
 }
 
+function drawNode(node) {
+    // console.log(`Drawing node: ${node.name} at (${node.x}, ${node.y}) with size (${node.width}, ${node.height})`);
+    drawRoundedRect(toScreenX(node.x), toScreenY(node.y), node.width * scale, node.height * scale, node.radius * scale, node.hover, node.name);
+    if (node.children && node.children.length > 0) {
+        node.children.forEach(child => {
+            child.parent = node;
+            drawNode(child);
+        });
+    }
+}
+
+function adjustNodeWithinParent(node) {
+    if (node.children && node.children.length > 0) {
+        node.children.forEach(child => {
+            child.parent = node;
+            child.x = Math.max(node.x, Math.min(child.x, node.x + node.width - child.width));
+            child.y = Math.max(node.y, Math.min(child.y, node.y + node.height - child.height));
+            adjustNodeWithinParent(child);
+        });
+    }
+}
+
 function redrawCanvas() {
-    // Set the canvas to the size of the window
     canvas.width = document.body.clientWidth;
     canvas.height = document.body.clientHeight;
-
     context.fillStyle = '#fff';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw rectangles and their children
-    for (const rect of rectangles) {
-        drawRoundedRect(toScreenX(rect.x), toScreenY(rect.y), rect.width * scale, rect.height * scale, rect.radius * scale, rect.hover, rect.name);
-        for (const child of rect.children) {
-            drawRoundedRect(toScreenX(child.x), toScreenY(child.y), child.width * scale, child.height * scale, child.radius * scale, child.hover, child.name);
-        }
-    }
+    rectangles.forEach(rect => adjustNodeWithinParent(rect)); // Adjust node positions
+    rectangles.forEach(rect => drawNode(rect));
 
-    // Draw line
+    // Additional logic for drawing connections, if necessary
     const lineStart = getIntersectionPoint(rectangles[0], rectangles[1]);
     const lineEnd = getIntersectionPoint(rectangles[1], rectangles[0]);
+    // console.log(`Drawing line from (${lineStart.x}, ${lineStart.y}) to (${lineEnd.x}, ${lineEnd.y})`);
     drawLine(toScreenX(lineStart.x), toScreenY(lineStart.y), toScreenX(lineEnd.x), toScreenY(lineEnd.y));
 }
-redrawCanvas();
-
-// If the window changes size, redraw the canvas
-window.addEventListener("resize", (event) => {
-    redrawCanvas();
-});
 
 // Drawing functions
 function drawRoundedRect(x, y, width, height, radius, hover, name) {
@@ -167,35 +182,32 @@ canvas.addEventListener('mousemove', function(event) {
     const trueY = toTrueY(event.pageY);
 
     let hovered = false;
-    for (const rect of rectangles) {
-        if (trueX > rect.x && trueX < rect.x + rect.width && trueY > rect.y && trueY < rect.y + rect.height) {
-            if (!rect.hover) {
-                rect.hover = true;
-                hovered = true;
-            }
-        } else {
-            if (rect.hover) {
-                rect.hover = false;
-                hovered = true;
-            }
+    rectangles.forEach(rect => {
+        if (updateHoverState(rect, trueX, trueY)) {
+            hovered = true;
         }
-        // Check children for hover state
-        for (const child of rect.children) {
-            if (trueX > child.x && trueX < child.x + child.width && trueY > child.y && trueY < child.y + child.height) {
-                if (!child.hover) {
-                    child.hover = true;
-                    hovered = true;
-                }
-            } else {
-                if (child.hover) {
-                    child.hover = false;
-                    hovered = true;
-                }
-            }
-        }
-    }
+    });
 
     if (hovered) {
         redrawCanvas();
     }
+});
+
+function updateHoverState(node, trueX, trueY) {
+    let isHovered = false;
+    node.hover = trueX > node.x && trueX < node.x + node.width && trueY > node.y && trueY < node.y + node.height;
+    if (node.hover) isHovered = true;
+    if (node.children && node.children.length > 0) {
+        node.children.forEach(child => {
+            if (updateHoverState(child, trueX, trueY)) {
+                isHovered = true;
+            }
+        });
+    }
+    return isHovered;
+}
+
+redrawCanvas();
+window.addEventListener("resize", (event) => {
+    redrawCanvas();
 });
