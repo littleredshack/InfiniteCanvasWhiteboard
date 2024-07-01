@@ -7,21 +7,22 @@ document.oncontextmenu = function () {
     return false;
 }
 
-// Define rectangles with children
+// Define rectangles with names
 const rectangles = [
     {
-        x: 100, y: 100, width: 200, height: 150, radius: 10, hover: false, children: [
-            { x: 120, y: 120, width: 60, height: 40, radius: 5, hover: false },
-            { x: 200, y: 150, width: 60, height: 40, radius: 5, hover: false }
+        x: 100, y: 100, width: 200, height: 150, radius: 10, hover: false, name: 'Node 1', children: [
+            { x: 120, y: 120, width: 60, height: 40, radius: 5, hover: false, name: 'Node 2' },
+            { x: 200, y: 150, width: 60, height: 40, radius: 5, hover: false, name: 'Node 3' }
         ]
     },
     {
-        x: 400, y: 300, width: 200, height: 150, radius: 10, hover: false, children: [
-            { x: 420, y: 320, width: 60, height: 40, radius: 5, hover: false },
-            { x: 500, y: 350, width: 60, height: 40, radius: 5, hover: false }
+        x: 400, y: 300, width: 200, height: 150, radius: 10, hover: false, name: 'Node 4', children: [
+            { x: 420, y: 320, width: 60, height: 40, radius: 5, hover: false, name: 'Node 5' },
+            { x: 500, y: 350, width: 60, height: 40, radius: 5, hover: false, name: 'Node 6' }
         ]
     }
 ];
+
 let selectedRect = null;
 let selectedChild = null;
 
@@ -62,9 +63,9 @@ function redrawCanvas() {
 
     // Draw rectangles and their children
     for (const rect of rectangles) {
-        drawRoundedRect(toScreenX(rect.x), toScreenY(rect.y), rect.width * scale, rect.height * scale, rect.radius * scale, rect.hover);
+        drawRoundedRect(toScreenX(rect.x), toScreenY(rect.y), rect.width * scale, rect.height * scale, rect.radius * scale, rect.hover, rect.name);
         for (const child of rect.children) {
-            drawRoundedRect(toScreenX(child.x), toScreenY(child.y), child.width * scale, child.height * scale, child.radius * scale, child.hover);
+            drawRoundedRect(toScreenX(child.x), toScreenY(child.y), child.width * scale, child.height * scale, child.radius * scale, child.hover, child.name);
         }
     }
 
@@ -81,7 +82,7 @@ window.addEventListener("resize", (event) => {
 });
 
 // Drawing functions
-function drawRoundedRect(x, y, width, height, radius, hover) {
+function drawRoundedRect(x, y, width, height, radius, hover, name) {
     context.beginPath();
     context.moveTo(x + radius, y);
     context.arcTo(x + width, y, x + width, y + height, radius);
@@ -92,6 +93,11 @@ function drawRoundedRect(x, y, width, height, radius, hover) {
     context.strokeStyle = '#000';
     context.lineWidth = 2;
     context.stroke();
+
+    // Draw the name of the node
+    context.font = "14px Arial";
+    context.fillStyle = "#000";
+    context.fillText(name, x + 5, y + 15);
 
     // Draw resize handle if hovered
     if (hover) {
