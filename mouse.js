@@ -3,6 +3,7 @@ let leftMouseDown = false;
 let rightMouseDown = false;
 let cursorX, cursorY, prevCursorX, prevCursorY;
 let resizingRect = null;
+let resizingChild = null;
 const resizeMargin = 10; // Margin around the rectangle to detect resizing
 
 function isInResizeZone(rect, x, y) {
@@ -19,10 +20,22 @@ function onMouseDown(event) {
     prevCursorX = event.pageX;
     prevCursorY = event.pageY;
 
-    // Check if the click is within the resize zone of any rectangle
+    const trueX = toTrueX(cursorX);
+    const trueY = toTrueY(cursorY);
+
+    // Check if the click is within the resize zone of any child node first
     for (const rect of rectangles) {
-        const trueX = toTrueX(cursorX);
-        const trueY = toTrueY(cursorY);
+        for (const child of rect.children) {
+            if (isInResizeZone(child, trueX, trueY)) {
+                resizingChild = child;
+                leftMouseDown = true;
+                return;
+            }
+        }
+    }
+
+    // Check if the click is within the resize zone of any parent node
+    for (const rect of rectangles) {
         if (isInResizeZone(rect, trueX, trueY)) {
             resizingRect = rect;
             leftMouseDown = true;
@@ -30,10 +43,19 @@ function onMouseDown(event) {
         }
     }
 
-    // Check if the click is within any rectangle
+    // Check if the click is within any child node first
     for (const rect of rectangles) {
-        const trueX = toTrueX(cursorX);
-        const trueY = toTrueY(cursorY);
+        for (const child of rect.children) {
+            if (trueX > child.x && trueX < child.x + child.width && trueY > child.y && trueY < child.y + child.height) {
+                selectedChild = child;
+                leftMouseDown = true;
+                return;
+            }
+        }
+    }
+
+    // Check if the click is within any parent node
+    for (const rect of rectangles) {
         if (trueX > rect.x && trueX < rect.x + rect.width && trueY > rect.y && trueY < rect.y + rect.height) {
             selectedRect = rect;
             leftMouseDown = true;
@@ -59,13 +81,49 @@ function onMouseMove(event) {
 
     if (leftMouseDown && resizingRect) {
         // Resize the selected rectangle
-        resizingRect.width += scaledX - prevScaledX;
-        resizingRect.height += scaledY - prevScaledY;
+        const newWidth = resizingRect.width + (scaledX - prevScaledX);
+        const newHeight = resizingRect.height + (scaledY - prevScaledY);
+
+        // Calculate the minimum width and height based on children
+        let minWidth = 0;
+        let minHeight = 0;
+        for (const child of resizingRect.children) {
+            const childRight = child.x + child.width - resizingRect.x;
+            const childBottom = child.y + child.height - resizingRect.y;
+            if (childRight > minWidth) {
+                minWidth = childRight;
+            }
+            if (childBottom > minHeight) {
+                minHeight = childBottom;
+            }
+        }
+
+        resizingRect.width = Math.max(newWidth, minWidth);
+        resizingRect.height = Math.max(newHeight, minHeight);
+
+        redrawCanvas();
+    } else if (leftMouseDown && resizingChild) {
+        // Resize the selected child
+        resizingChild.width += scaledX - prevScaledX;
+        resizingChild.height += scaledY - prevScaledY;
+        keepChildWithinParent(resizingChild);
+        redrawCanvas();
+    } else if (leftMouseDown && selectedChild) {
+        // Move the selected child
+        selectedChild.x += scaledX - prevScaledX;
+        selectedChild.y += scaledY - prevScaledY;
+        keepChildWithinParent(selectedChild);
         redrawCanvas();
     } else if (leftMouseDown && selectedRect) {
-        // Move the selected rectangle
-        selectedRect.x += scaledX - prevScaledX;
-        selectedRect.y += scaledY - prevScaledY;
+        // Move the selected rectangle and its children
+        const dx = scaledX - prevScaledX;
+        const dy = scaledY - prevScaledY;
+        selectedRect.x += dx;
+        selectedRect.y += dy;
+        for (const child of selectedRect.children) {
+            child.x += dx;
+            child.y += dy;
+        }
         redrawCanvas();
     } else if (rightMouseDown) {
         // Move the screen
@@ -82,6 +140,8 @@ function onMouseUp() {
     rightMouseDown = false;
     selectedRect = null;
     resizingRect = null;
+    selectedChild = null;
+    resizingChild = null;
 }
 
 function onMouseWheel(event) {
@@ -104,6 +164,16 @@ function onMouseWheel(event) {
     offsetY -= unitsAddTop;
 
     redrawCanvas();
+}
+
+// Ensure the child stays within the parent's boundaries
+function keepChildWithinParent(child) {
+    for (const rect of rectangles) {
+        if (rect.children.includes(child)) {
+            child.x = Math.max(rect.x, Math.min(child.x, rect.x + rect.width - child.width));
+            child.y = Math.max(rect.y, Math.min(child.y, rect.y + rect.height - child.height));
+        }
+    }
 }
 
 canvas.addEventListener('mousedown', onMouseDown);

@@ -7,12 +7,23 @@ document.oncontextmenu = function () {
     return false;
 }
 
-// Rectangles and line
+// Define rectangles with children
 const rectangles = [
-    { x: 100, y: 100, width: 100, height: 60, radius: 10, hover: false },
-    { x: 300, y: 200, width: 100, height: 60, radius: 10, hover: false }
+    {
+        x: 100, y: 100, width: 200, height: 150, radius: 10, hover: false, children: [
+            { x: 120, y: 120, width: 60, height: 40, radius: 5, hover: false },
+            { x: 200, y: 150, width: 60, height: 40, radius: 5, hover: false }
+        ]
+    },
+    {
+        x: 400, y: 300, width: 200, height: 150, radius: 10, hover: false, children: [
+            { x: 420, y: 320, width: 60, height: 40, radius: 5, hover: false },
+            { x: 500, y: 350, width: 60, height: 40, radius: 5, hover: false }
+        ]
+    }
 ];
 let selectedRect = null;
+let selectedChild = null;
 
 // Distance from origin
 let offsetX = 0;
@@ -49,9 +60,12 @@ function redrawCanvas() {
     context.fillStyle = '#fff';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw rectangles
+    // Draw rectangles and their children
     for (const rect of rectangles) {
         drawRoundedRect(toScreenX(rect.x), toScreenY(rect.y), rect.width * scale, rect.height * scale, rect.radius * scale, rect.hover);
+        for (const child of rect.children) {
+            drawRoundedRect(toScreenX(child.x), toScreenY(child.y), child.width * scale, child.height * scale, child.radius * scale, child.hover);
+        }
     }
 
     // Draw line
@@ -157,6 +171,20 @@ canvas.addEventListener('mousemove', function(event) {
             if (rect.hover) {
                 rect.hover = false;
                 hovered = true;
+            }
+        }
+        // Check children for hover state
+        for (const child of rect.children) {
+            if (trueX > child.x && trueX < child.x + child.width && trueY > child.y && trueY < child.y + child.height) {
+                if (!child.hover) {
+                    child.hover = true;
+                    hovered = true;
+                }
+            } else {
+                if (child.hover) {
+                    child.hover = false;
+                    hovered = true;
+                }
             }
         }
     }
