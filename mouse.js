@@ -1,13 +1,4 @@
-let leftMouseDown = false;
-let rightMouseDown = false;
-let cursorX, cursorY, prevCursorX, prevCursorY;
-let selectedNode = null; // Declare selectedNode here
-let resizingNode = null; // Declare resizingNode here
-
-const resizeMargin = 10; // Margin around the rectangle to detect resizing
-
-// Variables to store initial position during resizing
-let initialX, initialY;
+// mouse.js
 
 function isInResizeZone(node, x, y) {
     const handleRadius = node.radius / 2;

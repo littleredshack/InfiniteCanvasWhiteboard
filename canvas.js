@@ -1,3 +1,5 @@
+// canvas.js
+
 // Global variables for configuration
 const MIN_WIDTH = 70;
 const MIN_HEIGHT = 40;
@@ -5,6 +7,11 @@ const PADDING = 10;
 const TITLE_HEIGHT = 30; // Space for the title
 const DEFAULT_RADIUS = 5;
 const resizeMargin = 10; // Margin around the rectangle to detect resizing
+
+// Line configuration
+let lineThickness = 1;
+let lineColor = '#000';
+let lineType = 'solid'; // 'solid' or 'dotted'
 
 // Get our canvas element
 const canvas = document.getElementById("canvas");
@@ -142,8 +149,15 @@ function drawRoundedRect(x, y, width, height, radius, hover, name) {
     context.arcTo(x, y + height, x, y, radius);
     context.arcTo(x, y, x + width, y, radius);
     context.closePath();
-    context.strokeStyle = '#000';
-    context.lineWidth = 2;
+
+    if (lineType === 'dotted') {
+        context.setLineDash([5, 5]);
+    } else {
+        context.setLineDash([]);
+    }
+
+    context.strokeStyle = lineColor;
+    context.lineWidth = lineThickness;
     context.stroke();
 
     // Draw the name of the node
@@ -160,22 +174,27 @@ function drawRoundedRect(x, y, width, height, radius, hover, name) {
 function drawResizeHandle(x, y, width, height, radius) {
     const handleSpacing = 3; // Distance between the handles
 
-    context.strokeStyle = '#000';
+    context.strokeStyle = lineColor;
     context.lineWidth = 1;
 
     // First inner curve, shifted towards the center by handleSpacing
     context.beginPath();
     context.arc(x + width - radius - handleSpacing, y + height - radius - handleSpacing, radius, 0, Math.PI / 2, false);
     context.stroke();
-
 }
 
 function drawLine(x0, y0, x1, y1) {
+    if (lineType === 'dotted') {
+        context.setLineDash([5, 5]);
+    } else {
+        context.setLineDash([]);
+    }
+
     context.beginPath();
     context.moveTo(x0, y0);
     context.lineTo(x1, y1);
-    context.strokeStyle = '#000';
-    context.lineWidth = 2;
+    context.strokeStyle = lineColor;
+    context.lineWidth = lineThickness;
     context.stroke();
 }
 
