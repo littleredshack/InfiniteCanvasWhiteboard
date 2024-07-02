@@ -16,21 +16,21 @@ document.oncontextmenu = function () {
 // Define rectangles with children and names
 const rectangles = [
     {
-        x: 100, y: 100, width: 200, height: 150, radius: 10, hover: false, name: 'Node 1', children: [
-            { x: 120, y: 120, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 2', children: [] },
-            { x: 200, y: 150, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 3', children: [
-                { x: 220, y: 170, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 7', children: [
-                    { x: 230, y: 180, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 8', children: [] }
+        x: 100, y: 100, width: 200, height: 150, radius: 10, hover: false, visible: true, name: 'Node 1', children: [
+            { x: 120, y: 120, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 2', children: [] },
+            { x: 200, y: 150, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 3', children: [
+                { x: 220, y: 170, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 7', children: [
+                    { x: 230, y: 180, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 8', children: [] }
                 ] }
             ] }
         ]
     },
     {
-        x: 400, y: 300, width: 200, height: 150, radius: 10, hover: false, name: 'Node 4', children: [
-            { x: 420, y: 320, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 5', children: [
-                { x: 430, y: 330, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 9', children: [] }
+        x: 400, y: 300, width: 200, height: 150, radius: 10, hover: false, visible: true, name: 'Node 4', children: [
+            { x: 420, y: 320, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 5', children: [
+                { x: 430, y: 330, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 9', children: [] }
             ] },
-            { x: 500, y: 350, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 6', children: [] }
+            { x: 500, y: 350, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 6', children: [] }
         ]
     }
 ];
@@ -41,6 +41,10 @@ let offsetY = 0;
 
 // Zoom amount
 let scale = 1;
+
+// Timer for detecting double-clicks
+let clickTimer = null;
+const DOUBLE_CLICK_DELAY = 300; // milliseconds
 
 // Convert coordinates
 function toScreenX(xTrue) {
@@ -81,8 +85,9 @@ function calculateNodeDimensions(node) {
 }
 
 function drawNode(node) {
+    if (!node.visible) return;
     drawRoundedRect(toScreenX(node.x), toScreenY(node.y), node.width * scale, node.height * scale, node.radius * scale, node.hover, node.name);
-    if (node.children && node.children.length > 0) {
+    if (node.visible && node.children && node.children.length > 0) {
         node.children.forEach(child => {
             child.parent = node;
             drawNode(child);
@@ -213,16 +218,45 @@ canvas.addEventListener('mousemove', function(event) {
 
     if (hoveredNode) {
         hoveredNode.hover = true;
+        console.log(`Hovered node: ${hoveredNode.name}`);
     } else {
-        
+        console.log('Hovered node: None');
     }
 
     redrawCanvas();
 });
 
+canvas.addEventListener('click', function(event) {
+    if (clickTimer) {
+        clearTimeout(clickTimer);
+        clickTimer = null;
+        handleDoubleClick(event);
+    } else {
+        clickTimer = setTimeout(() => {
+            clickTimer = null;
+            // Handle single click if needed
+        }, DOUBLE_CLICK_DELAY);
+    }
+});
+
+function handleDoubleClick(event) {
+    const trueX = toTrueX(event.pageX);
+    const trueY = toTrueY(event.pageY);
+
+    const clickedNode = findHoveredNode(rectangles, trueX, trueY);
+
+    if (clickedNode) {
+        toggleVisibility(clickedNode);
+        console.log(`Toggled visibility for descendants of node: ${clickedNode.name}`);
+    }
+
+    redrawCanvas();
+}
+
 function findHoveredNode(nodes, trueX, trueY) {
     for (const node of nodes) {
         if (trueX > node.x && trueX < node.x + node.width && trueY > node.y && trueY < node.y + node.height) {
+            console.log(`Hovering on: ${node.name} at (${node.x}, ${node.y}) with size (${node.width}, ${node.height})`);
             if (node.children && node.children.length > 0) {
                 const hoveredChild = findHoveredNode(node.children, trueX, trueY);
                 if (hoveredChild) {
@@ -242,6 +276,15 @@ function clearHoverState(nodes) {
             clearHoverState(node.children);
         }
     });
+}
+
+function toggleVisibility(node) {
+    if (node.children && node.children.length > 0) {
+        node.children.forEach(child => {
+            child.visible = !child.visible;
+            toggleVisibility(child); // Recursively toggle visibility of descendants
+        });
+    }
 }
 
 // Initial layout setup
