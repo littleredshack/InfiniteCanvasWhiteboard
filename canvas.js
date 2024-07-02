@@ -1,3 +1,9 @@
+// Global variables for configuration
+const MIN_WIDTH = 70;
+const MIN_HEIGHT = 40;
+const PADDING = 10;
+const TITLE_HEIGHT = 30; // Space for the title
+
 // Get our canvas element
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
@@ -11,20 +17,20 @@ document.oncontextmenu = function () {
 const rectangles = [
     {
         x: 100, y: 100, width: 200, height: 150, radius: 10, hover: false, name: 'Node 1', children: [
-            { x: 120, y: 120, width: 70, height: 40, radius: 5, hover: false, name: 'Node 2', children: [] },
-            { x: 200, y: 150, width: 70, height: 40, radius: 5, hover: false, name: 'Node 3', children: [
-                { x: 220, y: 170, width: 70, height: 40, radius: 5, hover: false, name: 'Node 7', children: [
-                    { x: 230, y: 180, width: 70, height: 40, radius: 5, hover: false, name: 'Node 8', children: [] }
+            { x: 120, y: 120, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 2', children: [] },
+            { x: 200, y: 150, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 3', children: [
+                { x: 220, y: 170, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 7', children: [
+                    { x: 230, y: 180, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 8', children: [] }
                 ] }
             ] }
         ]
     },
     {
         x: 400, y: 300, width: 200, height: 150, radius: 10, hover: false, name: 'Node 4', children: [
-            { x: 420, y: 320, width: 70, height: 40, radius: 5, hover: false, name: 'Node 5', children: [
-                { x: 430, y: 330, width: 70, height: 40, radius: 5, hover: false, name: 'Node 9', children: [] }
+            { x: 420, y: 320, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 5', children: [
+                { x: 430, y: 330, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 9', children: [] }
             ] },
-            { x: 500, y: 350, width: 70, height: 40, radius: 5, hover: false, name: 'Node 6', children: [] }
+            { x: 500, y: 350, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, name: 'Node 6', children: [] }
         ]
     }
 ];
@@ -35,10 +41,6 @@ let offsetY = 0;
 
 // Zoom amount
 let scale = 1;
-
-// Padding around nodes
-const padding = 10;
-const titleHeight = 30; // Space for the title
 
 // Convert coordinates
 function toScreenX(xTrue) {
@@ -63,18 +65,18 @@ function trueWidth() {
 // Function to calculate the dimensions of each node based on its children
 function calculateNodeDimensions(node) {
     if (node.children && node.children.length > 0) {
-        let totalWidth = padding;
+        let totalWidth = PADDING;
         let maxHeight = 0;
         node.children.forEach(child => {
             calculateNodeDimensions(child);
-            totalWidth += child.width + padding; // Add space between children and padding
+            totalWidth += child.width + PADDING; // Add space between children and padding
             maxHeight = Math.max(maxHeight, child.height);
         });
-        node.width = Math.max(totalWidth, 70);
-        node.height = Math.max(maxHeight + titleHeight + padding, 40);
+        node.width = Math.max(totalWidth, MIN_WIDTH);
+        node.height = Math.max(maxHeight + TITLE_HEIGHT + PADDING, MIN_HEIGHT);
     } else {
-        node.width = Math.max(node.width, 70);
-        node.height = Math.max(node.height, 40);
+        node.width = Math.max(node.width, MIN_WIDTH);
+        node.height = Math.max(node.height, MIN_HEIGHT);
     }
 }
 
@@ -91,12 +93,12 @@ function drawNode(node) {
 // Adjust positions to avoid overlapping and fit within parent
 function adjustNodeWithinParent(node) {
     if (node.children && node.children.length > 0) {
-        let childX = node.x + padding;
+        let childX = node.x + PADDING;
         node.children.forEach(child => {
             child.parent = node;
             child.x = childX;
-            child.y = node.y + titleHeight;
-            childX += child.width + padding;
+            child.y = node.y + TITLE_HEIGHT;
+            childX += child.width + PADDING;
             adjustNodeWithinParent(child);
         });
     }
@@ -206,30 +208,40 @@ canvas.addEventListener('mousemove', function(event) {
     const trueX = toTrueX(event.pageX);
     const trueY = toTrueY(event.pageY);
 
-    let hovered = false;
-    rectangles.forEach(rect => {
-        if (updateHoverState(rect, trueX, trueY)) {
-            hovered = true;
-        }
-    });
+    clearHoverState(rectangles);
+    const hoveredNode = findHoveredNode(rectangles, trueX, trueY);
 
-    if (hovered) {
-        redrawCanvas();
+    if (hoveredNode) {
+        hoveredNode.hover = true;
+    } else {
+        
     }
+
+    redrawCanvas();
 });
 
-function updateHoverState(node, trueX, trueY) {
-    let isHovered = false;
-    node.hover = trueX > node.x && trueX < node.x + node.width && trueY > node.y && trueY < node.y + node.height;
-    if (node.hover) isHovered = true;
-    if (node.children && node.children.length > 0) {
-        node.children.forEach(child => {
-            if (updateHoverState(child, trueX, trueY)) {
-                isHovered = true;
+function findHoveredNode(nodes, trueX, trueY) {
+    for (const node of nodes) {
+        if (trueX > node.x && trueX < node.x + node.width && trueY > node.y && trueY < node.y + node.height) {
+            if (node.children && node.children.length > 0) {
+                const hoveredChild = findHoveredNode(node.children, trueX, trueY);
+                if (hoveredChild) {
+                    return hoveredChild;
+                }
             }
-        });
+            return node;
+        }
     }
-    return isHovered;
+    return null;
+}
+
+function clearHoverState(nodes) {
+    nodes.forEach(node => {
+        node.hover = false;
+        if (node.children && node.children.length > 0) {
+            clearHoverState(node.children);
+        }
+    });
 }
 
 // Initial layout setup
