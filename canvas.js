@@ -157,13 +157,19 @@ function drawRoundedRect(x, y, width, height, radius, hover, name) {
 }
 
 function drawResizeHandle(x, y, width, height, radius) {
-    const handleRadius = radius / 2;
-    context.beginPath();
-    context.arc(x + width - radius, y + height - radius, handleRadius, 0, Math.PI / 2, false);
+    const handleSpacing = 3; // Distance between the handles
+
     context.strokeStyle = '#000';
-    context.lineWidth = 2;
+    context.lineWidth = 1;
+
+    // First inner curve, shifted towards the center by handleSpacing
+    context.beginPath();
+    context.arc(x + width - radius - handleSpacing, y + height - radius - handleSpacing, radius, 0, Math.PI / 2, false);
     context.stroke();
+
 }
+
+
 
 function drawLine(x0, y0, x1, y1) {
     context.beginPath();
