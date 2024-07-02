@@ -41,15 +41,23 @@ function selectNode(node, trueX, trueY) {
 }
 
 function moveNode(node, dx, dy) {
+    const initialX = node.x;
+    const initialY = node.y;
+
     node.x += dx;
     node.y += dy;
 
-    // Move children nodes
-    if (node.children && node.children.length > 0) {
-        node.children.forEach(child => moveNode(child, dx, dy));
-    }
-
     keepNodeWithinParent(node);
+
+    const deltaX = node.x - initialX;
+    const deltaY = node.y - initialY;
+
+    // Move children nodes by the same delta, ensuring they stay within the parent's boundaries
+    if (node.children && node.children.length > 0) {
+        node.children.forEach(child => {
+            moveNode(child, deltaX, deltaY);
+        });
+    }
 }
 
 function resizeNode(node, dx, dy) {

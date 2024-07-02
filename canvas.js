@@ -1,5 +1,3 @@
-// canvas.js
-
 // Get our canvas element
 const canvas = document.getElementById("canvas");
 const context = canvas.getContext("2d");
@@ -13,20 +11,20 @@ document.oncontextmenu = function () {
 const rectangles = [
     {
         x: 100, y: 100, width: 200, height: 150, radius: 10, hover: false, name: 'Node 1', children: [
-            { x: 120, y: 120, width: 60, height: 40, radius: 5, hover: false, name: 'Node 2', children: [] },
-            { x: 200, y: 150, width: 60, height: 40, radius: 5, hover: false, name: 'Node 3', children: [
-                { x: 220, y: 170, width: 40, height: 30, radius: 5, hover: false, name: 'Node 7', children: [
-                    { x: 230, y: 180, width: 30, height: 20, radius: 5, hover: false, name: 'Node 8', children: [] }
+            { x: 120, y: 120, width: 70, height: 40, radius: 5, hover: false, name: 'Node 2', children: [] },
+            { x: 200, y: 150, width: 70, height: 40, radius: 5, hover: false, name: 'Node 3', children: [
+                { x: 220, y: 170, width: 70, height: 40, radius: 5, hover: false, name: 'Node 7', children: [
+                    { x: 230, y: 180, width: 70, height: 40, radius: 5, hover: false, name: 'Node 8', children: [] }
                 ] }
             ] }
         ]
     },
     {
         x: 400, y: 300, width: 200, height: 150, radius: 10, hover: false, name: 'Node 4', children: [
-            { x: 420, y: 320, width: 60, height: 40, radius: 5, hover: false, name: 'Node 5', children: [
-                { x: 430, y: 330, width: 40, height: 30, radius: 5, hover: false, name: 'Node 9', children: [] }
+            { x: 420, y: 320, width: 70, height: 40, radius: 5, hover: false, name: 'Node 5', children: [
+                { x: 430, y: 330, width: 70, height: 40, radius: 5, hover: false, name: 'Node 9', children: [] }
             ] },
-            { x: 500, y: 350, width: 60, height: 40, radius: 5, hover: false, name: 'Node 6', children: [] }
+            { x: 500, y: 350, width: 70, height: 40, radius: 5, hover: false, name: 'Node 6', children: [] }
         ]
     }
 ];
@@ -37,6 +35,10 @@ let offsetY = 0;
 
 // Zoom amount
 let scale = 1;
+
+// Padding around nodes
+const padding = 10;
+const titleHeight = 30; // Space for the title
 
 // Convert coordinates
 function toScreenX(xTrue) {
@@ -58,8 +60,25 @@ function trueWidth() {
     return canvas.clientWidth / scale;
 }
 
+// Function to calculate the dimensions of each node based on its children
+function calculateNodeDimensions(node) {
+    if (node.children && node.children.length > 0) {
+        let totalWidth = padding;
+        let maxHeight = 0;
+        node.children.forEach(child => {
+            calculateNodeDimensions(child);
+            totalWidth += child.width + padding; // Add space between children and padding
+            maxHeight = Math.max(maxHeight, child.height);
+        });
+        node.width = Math.max(totalWidth, 70);
+        node.height = Math.max(maxHeight + titleHeight + padding, 40);
+    } else {
+        node.width = Math.max(node.width, 70);
+        node.height = Math.max(node.height, 40);
+    }
+}
+
 function drawNode(node) {
-    // console.log(`Drawing node: ${node.name} at (${node.x}, ${node.y}) with size (${node.width}, ${node.height})`);
     drawRoundedRect(toScreenX(node.x), toScreenY(node.y), node.width * scale, node.height * scale, node.radius * scale, node.hover, node.name);
     if (node.children && node.children.length > 0) {
         node.children.forEach(child => {
@@ -69,15 +88,23 @@ function drawNode(node) {
     }
 }
 
+// Adjust positions to avoid overlapping and fit within parent
 function adjustNodeWithinParent(node) {
     if (node.children && node.children.length > 0) {
+        let childX = node.x + padding;
         node.children.forEach(child => {
             child.parent = node;
-            child.x = Math.max(node.x, Math.min(child.x, node.x + node.width - child.width));
-            child.y = Math.max(node.y, Math.min(child.y, node.y + node.height - child.height));
+            child.x = childX;
+            child.y = node.y + titleHeight;
+            childX += child.width + padding;
             adjustNodeWithinParent(child);
         });
     }
+}
+
+function initialLayout() {
+    rectangles.forEach(rect => calculateNodeDimensions(rect)); // Calculate node dimensions
+    rectangles.forEach(rect => adjustNodeWithinParent(rect)); // Adjust node positions
 }
 
 function redrawCanvas() {
@@ -86,13 +113,11 @@ function redrawCanvas() {
     context.fillStyle = '#fff';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    rectangles.forEach(rect => adjustNodeWithinParent(rect)); // Adjust node positions
     rectangles.forEach(rect => drawNode(rect));
 
     // Additional logic for drawing connections, if necessary
     const lineStart = getIntersectionPoint(rectangles[0], rectangles[1]);
     const lineEnd = getIntersectionPoint(rectangles[1], rectangles[0]);
-    // console.log(`Drawing line from (${lineStart.x}, ${lineStart.y}) to (${lineEnd.x}, ${lineEnd.y})`);
     drawLine(toScreenX(lineStart.x), toScreenY(lineStart.y), toScreenX(lineEnd.x), toScreenY(lineEnd.y));
 }
 
@@ -112,7 +137,7 @@ function drawRoundedRect(x, y, width, height, radius, hover, name) {
     // Draw the name of the node
     context.font = "14px Arial";
     context.fillStyle = "#000";
-    context.fillText(name, x + 5, y + 15);
+    context.fillText(name, x + 5, y + 20);
 
     // Draw resize handle if hovered
     if (hover) {
@@ -207,6 +232,8 @@ function updateHoverState(node, trueX, trueY) {
     return isHovered;
 }
 
+// Initial layout setup
+initialLayout();
 redrawCanvas();
 window.addEventListener("resize", (event) => {
     redrawCanvas();
