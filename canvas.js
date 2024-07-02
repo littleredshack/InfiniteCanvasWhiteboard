@@ -3,6 +3,7 @@ const MIN_WIDTH = 70;
 const MIN_HEIGHT = 40;
 const PADDING = 10;
 const TITLE_HEIGHT = 30; // Space for the title
+const DEFAULT_RADIUS = 5;
 
 // Get our canvas element
 const canvas = document.getElementById("canvas");
@@ -13,25 +14,25 @@ document.oncontextmenu = function () {
     return false;
 }
 
-// Define rectangles with children and names
+// Define rectangles with children and names (without width, height, and radius)
 const rectangles = [
     {
-        x: 100, y: 100, width: 200, height: 150, radius: 10, hover: false, visible: true, name: 'Node 1', children: [
-            { x: 120, y: 120, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 2', children: [] },
-            { x: 200, y: 150, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 3', children: [
-                { x: 220, y: 170, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 7', children: [
-                    { x: 230, y: 180, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 8', children: [] },
-                    { x: 310, y: 180, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 10', children: [] }
+        x: 100, y: 100, name: 'Node 1', children: [
+            { x: 120, y: 120, name: 'Node 2', children: [] },
+            { x: 200, y: 150, name: 'Node 3', children: [
+                { x: 220, y: 170, name: 'Node 7', children: [
+                    { x: 230, y: 180, name: 'Node 8', children: [] },
+                    { x: 310, y: 180, name: 'Node 10', children: [] }
                 ] }
             ] }
         ]
     },
     {
-        x: 400, y: 300, width: 200, height: 150, radius: 10, hover: false, visible: true, name: 'Node 4', children: [
-            { x: 420, y: 320, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 5', children: [
-                { x: 430, y: 330, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 9', children: [] }
+        x: 400, y: 300, name: 'Node 4', children: [
+            { x: 420, y: 320, name: 'Node 5', children: [
+                { x: 430, y: 330, name: 'Node 9', children: [] }
             ] },
-            { x: 500, y: 350, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 6', children: [] }
+            { x: 500, y: 350, name: 'Node 6', children: [] }
         ]
     }
 ];
@@ -69,6 +70,11 @@ function trueWidth() {
 
 // Function to calculate the dimensions of each node based on its children
 function calculateNodeDimensions(node) {
+    node.width = node.width || MIN_WIDTH;
+    node.height = node.height || MIN_HEIGHT;
+    node.radius = node.radius || DEFAULT_RADIUS;
+    node.visible = true; // Ensure all nodes are initially visible
+    
     if (node.children && node.children.length > 0) {
         let totalWidth = PADDING;
         let maxHeight = 0;
@@ -79,9 +85,6 @@ function calculateNodeDimensions(node) {
         });
         node.width = Math.max(totalWidth, MIN_WIDTH);
         node.height = Math.max(maxHeight + TITLE_HEIGHT + PADDING, MIN_HEIGHT);
-    } else {
-        node.width = Math.max(node.width, MIN_WIDTH);
-        node.height = Math.max(node.height, MIN_HEIGHT);
     }
 }
 
