@@ -14,8 +14,8 @@ document.oncontextmenu = function () {
     return false;
 }
 
-// Define rectangles with children and names (without width, height, and radius)
-const rectangles = [
+// Define data with children and names (without width, height, and radius)
+const data = [
     {
         x: 100, y: 100, name: 'Node 1', children: [
             { x: 120, y: 120, name: 'Node 2', children: [] },
@@ -91,7 +91,7 @@ function calculateNodeDimensions(node) {
 function drawNode(node) {
     if (!node.visible) return;
     drawRoundedRect(toScreenX(node.x), toScreenY(node.y), node.width * scale, node.height * scale, node.radius * scale, node.hover, node.name);
-    if (node.visible && node.children && node.children.length > 0) {
+    if (node.children && node.children.length > 0) {
         node.children.forEach(child => {
             child.parent = node;
             drawNode(child);
@@ -114,8 +114,8 @@ function adjustNodeWithinParent(node) {
 }
 
 function initialLayout() {
-    rectangles.forEach(rect => calculateNodeDimensions(rect)); // Calculate node dimensions
-    rectangles.forEach(rect => adjustNodeWithinParent(rect)); // Adjust node positions
+    data.forEach(rect => calculateNodeDimensions(rect)); // Calculate node dimensions
+    data.forEach(rect => adjustNodeWithinParent(rect)); // Adjust node positions
 }
 
 function redrawCanvas() {
@@ -124,11 +124,11 @@ function redrawCanvas() {
     context.fillStyle = '#fff';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    rectangles.forEach(rect => drawNode(rect));
+    data.forEach(rect => drawNode(rect));
 
     // Additional logic for drawing connections, if necessary
-    const lineStart = getIntersectionPoint(rectangles[0], rectangles[1]);
-    const lineEnd = getIntersectionPoint(rectangles[1], rectangles[0]);
+    const lineStart = getIntersectionPoint(data[0], data[1]);
+    const lineEnd = getIntersectionPoint(data[1], data[0]);
     drawLine(toScreenX(lineStart.x), toScreenY(lineStart.y), toScreenX(lineEnd.x), toScreenY(lineEnd.y));
 }
 
@@ -217,8 +217,8 @@ canvas.addEventListener('mousemove', function(event) {
     const trueX = toTrueX(event.pageX);
     const trueY = toTrueY(event.pageY);
 
-    clearHoverState(rectangles);
-    const hoveredNode = findHoveredNode(rectangles, trueX, trueY);
+    clearHoverState(data);
+    const hoveredNode = findHoveredNode(data, trueX, trueY);
 
     if (hoveredNode) {
         hoveredNode.hover = true;
@@ -244,7 +244,7 @@ function handleDoubleClick(event) {
     const trueX = toTrueX(event.pageX);
     const trueY = toTrueY(event.pageY);
 
-    const clickedNode = findHoveredNode(rectangles, trueX, trueY);
+    const clickedNode = findHoveredNode(data, trueX, trueY);
 
     if (clickedNode) {
         toggleVisibility(clickedNode);
@@ -255,7 +255,7 @@ function handleDoubleClick(event) {
 
 function findHoveredNode(nodes, trueX, trueY) {
     for (const node of nodes) {
-        if (trueX > node.x && trueX < node.x + node.width && trueY > node.y && trueY < node.y + node.height) {
+        if (node.visible && trueX > node.x && trueX < node.x + node.width && trueY > node.y && trueY < node.y + node.height) {
             if (node.children && node.children.length > 0) {
                 const hoveredChild = findHoveredNode(node.children, trueX, trueY);
                 if (hoveredChild) {

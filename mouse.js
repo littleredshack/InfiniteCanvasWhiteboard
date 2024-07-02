@@ -31,7 +31,7 @@ function selectNode(node, trueX, trueY) {
     }
 
     // Check current node
-    if (trueX > node.x && trueX < node.x + node.width && trueY > node.y && trueY < node.y + node.height) {
+    if (node.visible && trueX > node.x && trueX < node.x + node.width && trueY > node.y && trueY < node.y + node.height) {
         selectedNode = node;
         resizingNode = isInResizeZone(node, trueX, trueY) ? node : null;
         return node;
@@ -41,23 +41,15 @@ function selectNode(node, trueX, trueY) {
 }
 
 function moveNode(node, dx, dy) {
-    const initialX = node.x;
-    const initialY = node.y;
-
     node.x += dx;
     node.y += dy;
 
-    keepNodeWithinParent(node);
-
-    const deltaX = node.x - initialX;
-    const deltaY = node.y - initialY;
-
-    // Move children nodes by the same delta, ensuring they stay within the parent's boundaries
+    // Move children nodes
     if (node.children && node.children.length > 0) {
-        node.children.forEach(child => {
-            moveNode(child, deltaX, deltaY);
-        });
+        node.children.forEach(child => moveNode(child, dx, dy));
     }
+
+    keepNodeWithinParent(node);
 }
 
 function resizeNode(node, dx, dy) {
@@ -119,16 +111,12 @@ function onMouseDown(event) {
     const trueY = toTrueY(cursorY);
 
     let foundNode = null;
-    for (let rect of rectangles) {
+    for (let rect of data) {
         rect.parent = null; // Top-level nodes don't have a parent
         foundNode = selectNode(rect, trueX, trueY);
         if (foundNode) {
             break;
         }
-    }
-    
-    if (!foundNode) {
-        console.log("No node selected");
     }
 
     if (resizingNode) {
@@ -158,12 +146,6 @@ function onMouseMove(event) {
         const dy = scaledY - prevScaledY;
         if (resizingNode) {
             resizeNode(resizingNode, dx, dy);
-            // Debugging resize operation
-            console.log(`Resizing node: ${resizingNode.name}`);
-            console.log(`Cursor Position: (${cursorX}, ${cursorY})`);
-            console.log(`Node Position: (${resizingNode.x}, ${resizingNode.y})`);
-            console.log(`Initial Position: (${initialX}, ${initialY})`);
-            console.log(`New Dimensions: (${resizingNode.width}, ${resizingNode.height})`);
         } else {
             moveNode(selectedNode, dx, dy);
         }
@@ -195,7 +177,7 @@ function onMouseWheel(event) {
 
     // Calculate how much we need to zoom
     const unitsZoomedX = trueWidth() * scaleAmount;
-    const unitsZoomedY = trueHeight * scaleAmount;
+    const unitsZoomedY = trueHeight() * scaleAmount;
 
     const unitsAddLeft = unitsZoomedX * distX;
     const unitsAddTop = unitsZoomedY * distY;
@@ -204,14 +186,6 @@ function onMouseWheel(event) {
     offsetY -= unitsAddTop;
 
     redrawCanvas();
-}
-
-// Ensure the child stays within the parent's boundaries
-function keepChildWithinParent(child) {
-    if (!child.parent) return;
-    const parent = child.parent;
-    child.x = Math.max(parent.x, Math.min(child.x, parent.x + parent.width - child.width));
-    child.y = Math.max(parent.y, Math.min(child.y, parent.y + parent.height - child.height));
 }
 
 canvas.addEventListener('mousedown', onMouseDown);
