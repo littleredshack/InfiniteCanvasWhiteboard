@@ -20,7 +20,8 @@ const rectangles = [
             { x: 120, y: 120, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 2', children: [] },
             { x: 200, y: 150, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 3', children: [
                 { x: 220, y: 170, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 7', children: [
-                    { x: 230, y: 180, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 8', children: [] }
+                    { x: 230, y: 180, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 8', children: [] },
+                    { x: 310, y: 180, width: MIN_WIDTH, height: MIN_HEIGHT, radius: 5, hover: false, visible: true, name: 'Node 10', children: [] }
                 ] }
             ] }
         ]
@@ -218,9 +219,6 @@ canvas.addEventListener('mousemove', function(event) {
 
     if (hoveredNode) {
         hoveredNode.hover = true;
-        console.log(`Hovered node: ${hoveredNode.name}`);
-    } else {
-        console.log('Hovered node: None');
     }
 
     redrawCanvas();
@@ -247,7 +245,6 @@ function handleDoubleClick(event) {
 
     if (clickedNode) {
         toggleVisibility(clickedNode);
-        console.log(`Toggled visibility for descendants of node: ${clickedNode.name}`);
     }
 
     redrawCanvas();
@@ -256,7 +253,6 @@ function handleDoubleClick(event) {
 function findHoveredNode(nodes, trueX, trueY) {
     for (const node of nodes) {
         if (trueX > node.x && trueX < node.x + node.width && trueY > node.y && trueY < node.y + node.height) {
-            console.log(`Hovering on: ${node.name} at (${node.x}, ${node.y}) with size (${node.width}, ${node.height})`);
             if (node.children && node.children.length > 0) {
                 const hoveredChild = findHoveredNode(node.children, trueX, trueY);
                 if (hoveredChild) {
