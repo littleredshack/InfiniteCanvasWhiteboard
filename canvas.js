@@ -23,27 +23,32 @@ document.oncontextmenu = function () {
 }
 
 // Define data with children and names (without width, height, and radius)
-const data = [
-    {
-        x: 100, y: 100, name: 'Node 1', children: [
-            { x: 120, y: 120, name: 'Node 2', children: [] },
-            { x: 200, y: 150, name: 'Node 3', children: [
-                { x: 220, y: 170, name: 'Node 7', children: [
-                    { x: 230, y: 180, name: 'Node 8', children: [] },
-                    { x: 310, y: 180, name: 'Node 10', children: [] }
+const data = {
+    nodes: [
+        {
+            id: 1, x: 100, y: 100, name: 'Node 1', children: [
+                { id: 2, x: 120, y: 120, name: 'Node 2', children: [] },
+                { id: 3, x: 200, y: 150, name: 'Node 3', children: [
+                    { id: 7, x: 220, y: 170, name: 'Node 7', children: [
+                        { id: 8, x: 230, y: 180, name: 'Node 8', children: [] },
+                        { id: 10, x: 310, y: 180, name: 'Node 10', children: [] }
+                    ] }
                 ] }
-            ] }
-        ]
-    },
-    {
-        x: 400, y: 300, name: 'Node 4', children: [
-            { x: 420, y: 320, name: 'Node 5', children: [
-                { x: 430, y: 330, name: 'Node 9', children: [] }
-            ] },
-            { x: 500, y: 350, name: 'Node 6', children: [] }
-        ]
-    }
-];
+            ]
+        },
+        {
+            id: 4, x: 400, y: 300, name: 'Node 4', children: [
+                { id: 5, x: 420, y: 320, name: 'Node 5', children: [
+                    { id: 9, x: 430, y: 330, name: 'Node 9', children: [] }
+                ] },
+                { id: 6, x: 500, y: 350, name: 'Node 6', children: [] }
+            ]
+        }
+    ],
+    edges: [
+        { fromId: 8, toId: 9, type: 'USES' }
+    ]
+};
 
 // Distance from origin
 let offsetX = 0;
@@ -122,8 +127,8 @@ function adjustNodeWithinParent(node) {
 }
 
 function initialLayout() {
-    data.forEach(rect => calculateNodeDimensions(rect)); // Calculate node dimensions
-    data.forEach(rect => adjustNodeWithinParent(rect)); // Adjust node positions
+    data.nodes.forEach(rect => calculateNodeDimensions(rect)); // Calculate node dimensions
+    data.nodes.forEach(rect => adjustNodeWithinParent(rect)); // Adjust node positions
 }
 
 function redrawCanvas() {
@@ -132,12 +137,12 @@ function redrawCanvas() {
     context.fillStyle = '#fff';
     context.fillRect(0, 0, canvas.width, canvas.height);
 
-    data.forEach(rect => drawNode(rect));
+    data.nodes.forEach(rect => drawNode(rect));
+
+    // Draw edges
+    data.edges.forEach(edge => drawEdge(edge));
 
     // Additional logic for drawing connections, if necessary
-    const lineStart = getIntersectionPoint(data[0], data[1]);
-    const lineEnd = getIntersectionPoint(data[1], data[0]);
-    drawLine(toScreenX(lineStart.x), toScreenY(lineStart.y), toScreenX(lineEnd.x), toScreenY(lineEnd.y));
 }
 
 // Drawing functions
@@ -198,6 +203,38 @@ function drawLine(x0, y0, x1, y1) {
     context.stroke();
 }
 
+function drawEdge(edge) {
+    const fromNode = findNodeById(edge.fromId);
+    const toNode = findNodeById(edge.toId);
+    if (fromNode && toNode) {
+        const lineStart = { x: fromNode.x + fromNode.width / 2, y: fromNode.y + fromNode.height / 2 };
+        const lineEnd = { x: toNode.x + toNode.width / 2, y: toNode.y + toNode.height / 2 };
+        drawLine(toScreenX(lineStart.x), toScreenY(lineStart.y), toScreenX(lineEnd.x), toScreenY(lineEnd.y));
+    }
+}
+
+function findNodeById(id) {
+    for (const node of data.nodes) {
+        if (node.id === id) return node;
+        if (node.children) {
+            const childNode = findNodeByIdRecursive(node.children, id);
+            if (childNode) return childNode;
+        }
+    }
+    return null;
+}
+
+function findNodeByIdRecursive(children, id) {
+    for (const child of children) {
+        if (child.id === id) return child;
+        if (child.children) {
+            const nestedChild = findNodeByIdRecursive(child.children, id);
+            if (nestedChild) return nestedChild;
+        }
+    }
+    return null;
+}
+
 // Calculate the intersection of the line with the rectangle's edges
 function getIntersectionPoint(rect, targetRect) {
     const cx = rect.x + rect.width / 2;
@@ -241,8 +278,8 @@ canvas.addEventListener('mousemove', function(event) {
     const trueX = toTrueX(event.pageX);
     const trueY = toTrueY(event.pageY);
 
-    clearHoverState(data);
-    const hoveredNode = findHoveredNode(data, trueX, trueY);
+    clearHoverState(data.nodes);
+    const hoveredNode = findHoveredNode(data.nodes, trueX, trueY);
 
     if (hoveredNode) {
         hoveredNode.hover = true;
@@ -268,7 +305,7 @@ function handleDoubleClick(event) {
     const trueX = toTrueX(event.pageX);
     const trueY = toTrueY(event.pageY);
 
-    const clickedNode = findHoveredNode(data, trueX, trueY);
+    const clickedNode = findHoveredNode(data.nodes, trueX, trueY);
 
     if (clickedNode) {
         toggleVisibility(clickedNode);

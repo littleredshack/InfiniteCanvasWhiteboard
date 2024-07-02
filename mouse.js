@@ -123,7 +123,7 @@ function onMouseDown(event) {
     const trueY = toTrueY(cursorY);
 
     let foundNode = null;
-    for (let rect of data) {
+    for (let rect of data.nodes) {
         rect.parent = null; // Top-level nodes don't have a parent
         foundNode = selectNode(rect, trueX, trueY);
         if (foundNode) {
