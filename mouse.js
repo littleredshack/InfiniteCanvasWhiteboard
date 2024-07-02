@@ -1,5 +1,13 @@
 // mouse.js
 
+// Global variables for cursor positions
+let cursorX, cursorY, prevCursorX, prevCursorY;
+let selectedNode = null;
+let resizingNode = null;
+let initialX, initialY;
+let leftMouseDown = false;
+let rightMouseDown = false;
+
 function isInResizeZone(node, x, y) {
     const handleRadius = node.radius / 2;
     const handleCenterX = node.x + node.width - node.radius;
@@ -44,8 +52,8 @@ function moveNode(node, dx, dy) {
 }
 
 function resizeNode(node, dx, dy) {
-    const minWidth = Math.max(...node.children.map(child => child.x - node.x + child.width));
-    const minHeight = Math.max(...node.children.map(child => child.y - node.y + child.height));
+    const minWidth = Math.max(MIN_WIDTH, ...node.children.map(child => child.x - node.x + child.width));
+    const minHeight = Math.max(MIN_HEIGHT, ...node.children.map(child => child.y - node.y + child.height));
 
     // Calculate the new width and height
     let newWidth = node.width + dx;
@@ -56,8 +64,8 @@ function resizeNode(node, dx, dy) {
     newHeight = Math.max(newHeight, minHeight);
 
     // Ensure width and height are non-negative
-    newWidth = Math.max(newWidth, 0);
-    newHeight = Math.max(newHeight, 0);
+    newWidth = Math.max(newWidth, MIN_WIDTH);
+    newHeight = Math.max(newHeight, MIN_HEIGHT);
 
     // Ensure the node stays within the parent's boundaries
     if (node.parent) {
@@ -88,8 +96,21 @@ function keepNodeWithinParent(node) {
     const parent = node.parent;
 
     // Ensure the node stays within the parent's boundaries
+    const originalX = node.x;
+    const originalY = node.y;
+
     node.x = Math.max(parent.x, Math.min(node.x, parent.x + parent.width - node.width));
     node.y = Math.max(parent.y, Math.min(node.y, parent.y + parent.height - node.height));
+
+    const dx = node.x - originalX;
+    const dy = node.y - originalY;
+
+    if (dx !== 0 || dy !== 0) {
+        // Move children back if the parent node was constrained
+        if (node.children && node.children.length > 0) {
+            node.children.forEach(child => moveNode(child, dx, dy));
+        }
+    }
 }
 
 function onMouseDown(event) {
