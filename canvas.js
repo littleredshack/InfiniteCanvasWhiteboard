@@ -140,6 +140,33 @@ function initialLayout() {
     addVisibilityProperty(data.nodes); // Add visibility property
     data.nodes.forEach(rect => calculateNodeDimensions(rect)); // Calculate node dimensions
     data.nodes.forEach(rect => adjustNodeWithinParent(rect)); // Adjust node positions
+    updateEdges();
+    redrawCanvas();
+}
+
+function updateEdges() {
+    data.edges.forEach(edge => {
+        const fromNode = findNodeById(edge.fromId);
+        const toNode = findNodeById(edge.toId);
+
+        const nextVisibleFrom = findNextVisibleAncestor(fromNode);
+        const nextVisibleTo = findNextVisibleAncestor(toNode);
+
+        if (nextVisibleFrom && nextVisibleTo) {
+            edge.displayFromId = nextVisibleFrom.id;
+            edge.displayToId = nextVisibleTo.id;
+        }
+    });
+}
+
+function drawEdge(edge) {
+    const fromNode = findNodeById(edge.displayFromId);
+    const toNode = findNodeById(edge.displayToId);
+    if (fromNode && toNode) {
+        const lineStart = { x: fromNode.x + fromNode.width / 2, y: fromNode.y + fromNode.height / 2 };
+        const lineEnd = { x: toNode.x + toNode.width / 2, y: toNode.y + toNode.height / 2 };
+        drawLine(toScreenX(lineStart.x), toScreenY(lineStart.y), toScreenX(lineEnd.x), toScreenY(lineEnd.y), fromNode, toNode);
+    }
 }
 
 function redrawCanvas() {
@@ -291,8 +318,8 @@ function drawEdge(edge) {
     const fromNode = findNodeById(edge.displayFromId);
     const toNode = findNodeById(edge.displayToId);
     if (fromNode && toNode) {
-        const lineStart = { x: fromNode.x + fromNode.width / 2, y: fromNode.y + fromNode.height / 2 };
-        const lineEnd = { x: toNode.x + toNode.width / 2, y: toNode.y + toNode.height / 2 };
+        const lineStart = getIntersectionPointWithNodeBorder(fromNode.x + fromNode.width / 2, fromNode.y + fromNode.height / 2, toNode.x + toNode.width / 2, toNode.y + toNode.height / 2, fromNode);
+        const lineEnd = getIntersectionPointWithNodeBorder(toNode.x + toNode.width / 2, toNode.y + toNode.height / 2, fromNode.x + fromNode.width / 2, fromNode.y + fromNode.height / 2, toNode);
         drawLine(toScreenX(lineStart.x), toScreenY(lineStart.y), toScreenX(lineEnd.x), toScreenY(lineEnd.y), fromNode, toNode);
     }
 }
@@ -426,21 +453,6 @@ function toggleVisibility(node, visibility) {
 
     // Update edges
     updateEdges();
-}
-
-function updateEdges() {
-    data.edges.forEach(edge => {
-        const fromNode = findNodeById(edge.fromId);
-        const toNode = findNodeById(edge.toId);
-
-        const nextVisibleFrom = findNextVisibleAncestor(fromNode);
-        const nextVisibleTo = findNextVisibleAncestor(toNode);
-
-        if (nextVisibleFrom && nextVisibleTo) {
-            edge.displayFromId = nextVisibleFrom.id;
-            edge.displayToId = nextVisibleTo.id;
-        }
-    });
 }
 
 // Initial layout setup
