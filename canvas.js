@@ -12,6 +12,7 @@ const resizeMargin = 10; // Margin around the rectangle to detect resizing
 let lineThickness = 1;
 let lineColor = '#000';
 let lineType = 'solid'; // 'solid' or 'dotted'
+let lineStyle = 'orthogonal'; // 'straight' or 'orthogonal'
 
 // Get our canvas element
 const canvas = document.getElementById("canvas");
@@ -199,8 +200,30 @@ function drawResizeHandle(x, y, width, height, radius) {
 }
 
 function drawLine(x0, y0, x1, y1, fromNode, toNode) {
-    const start = getIntersectionPointWithNodeBorder(x0, y0, x1, y1, fromNode);
-    const end = getIntersectionPointWithNodeBorder(x1, y1, x0, y0, toNode);
+    if (lineStyle === 'orthogonal') {
+        drawOrthogonalLine(x0, y0, x1, y1, fromNode, toNode);
+    } else {
+        const start = getIntersectionPointWithNodeBorder(x0, y0, x1, y1, fromNode);
+        const end = getIntersectionPointWithNodeBorder(x1, y1, x0, y0, toNode);
+
+        if (lineType === 'dotted') {
+            context.setLineDash([5, 5]);
+        } else {
+            context.setLineDash([]);
+        }
+
+        context.beginPath();
+        context.moveTo(start.x, start.y);
+        context.lineTo(end.x, end.y);
+        context.strokeStyle = lineColor;
+        context.lineWidth = lineThickness;
+        context.stroke();
+    }
+}
+
+function drawOrthogonalLine(x0, y0, x1, y1, fromNode, toNode) {
+    const start = getOrthogonalPointWithNodeBorder(x0, y0, x1, y1, fromNode);
+    const end = getOrthogonalPointWithNodeBorder(x1, y1, x0, y0, toNode);
 
     if (lineType === 'dotted') {
         context.setLineDash([5, 5]);
@@ -210,6 +233,16 @@ function drawLine(x0, y0, x1, y1, fromNode, toNode) {
 
     context.beginPath();
     context.moveTo(start.x, start.y);
+
+    // Determine the direction to draw the orthogonal line
+    if (start.x !== end.x) {
+        context.lineTo(start.x, (start.y + end.y) / 2);
+        context.lineTo(end.x, (start.y + end.y) / 2);
+    } else {
+        context.lineTo((start.x + end.x) / 2, start.y);
+        context.lineTo((start.x + end.x) / 2, end.y);
+    }
+
     context.lineTo(end.x, end.y);
     context.strokeStyle = lineColor;
     context.lineWidth = lineThickness;
@@ -223,6 +256,32 @@ function drawEdge(edge) {
         const lineStart = { x: fromNode.x + fromNode.width / 2, y: fromNode.y + fromNode.height / 2 };
         const lineEnd = { x: toNode.x + toNode.width / 2, y: toNode.y + toNode.height / 2 };
         drawLine(toScreenX(lineStart.x), toScreenY(lineStart.y), toScreenX(lineEnd.x), toScreenY(lineEnd.y), fromNode, toNode);
+    }
+}
+
+function getOrthogonalPointWithNodeBorder(x0, y0, x1, y1, node) {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+
+    // Determine which side of the node the point should be on
+    if (Math.abs(dx) > Math.abs(dy)) {
+        // Horizontal line
+        if (dx > 0) {
+            // Right side
+            return { x: node.x + node.width, y: y0 };
+        } else {
+            // Left side
+            return { x: node.x, y: y0 };
+        }
+    } else {
+        // Vertical line
+        if (dy > 0) {
+            // Bottom side
+            return { x: x0, y: node.y + node.height };
+        } else {
+            // Top side
+            return { x: x0, y: node.y };
+        }
     }
 }
 
