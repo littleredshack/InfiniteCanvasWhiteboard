@@ -81,12 +81,21 @@ function trueWidth() {
     return canvas.clientWidth / scale;
 }
 
+// Function to add visibility property to all nodes
+function addVisibilityProperty(nodes) {
+    nodes.forEach(node => {
+        node.visible = true;
+        if (node.children && node.children.length > 0) {
+            addVisibilityProperty(node.children);
+        }
+    });
+}
+
 // Function to calculate the dimensions of each node based on its children
 function calculateNodeDimensions(node) {
     node.width = node.width || MIN_WIDTH;
     node.height = node.height || MIN_HEIGHT;
     node.radius = node.radius || DEFAULT_RADIUS;
-    node.visible = true; // Ensure all nodes are initially visible
     
     if (node.children && node.children.length > 0) {
         let totalWidth = PADDING;
@@ -127,6 +136,7 @@ function adjustNodeWithinParent(node) {
 }
 
 function initialLayout() {
+    addVisibilityProperty(data.nodes); // Add visibility property
     data.nodes.forEach(rect => calculateNodeDimensions(rect)); // Calculate node dimensions
     data.nodes.forEach(rect => adjustNodeWithinParent(rect)); // Adjust node positions
 }
@@ -309,6 +319,7 @@ function handleDoubleClick(event) {
 
     if (clickedNode) {
         toggleVisibility(clickedNode);
+        console.log("Updated Data Structure:", data); // Log the updated data structure
     }
 
     redrawCanvas();
@@ -339,13 +350,33 @@ function clearHoverState(nodes) {
 }
 
 function toggleVisibility(node) {
+    if (!node._visibilityStack) {
+        node._visibilityStack = [];
+    }
+
     if (node.children && node.children.length > 0) {
-        node.children.forEach(child => {
-            child.visible = !child.visible;
-            toggleVisibility(child); // Recursively toggle visibility of descendants
-        });
+        const currentState = node.children[0].visible;
+
+        if (currentState) {
+            // If children are currently visible, store their states and hide them
+            const visibilityState = node.children.map(child => child.visible);
+            node._visibilityStack.push(visibilityState);
+            node.children.forEach(child => {
+                child.visible = false;
+                toggleVisibility(child); // Recursively hide descendants
+            });
+        } else {
+            // If children are currently hidden, restore their previous states
+            const visibilityState = node._visibilityStack.pop();
+            node.children.forEach((child, index) => {
+                child.visible = visibilityState[index];
+                toggleVisibility(child, child.visible); // Recursively show descendants if they were visible
+            });
+        }
     }
 }
+
+
 
 // Initial layout setup
 initialLayout();
