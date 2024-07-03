@@ -46,7 +46,7 @@ const data = {
         }
     ],
     edges: [
-        { fromId: 8, toId: 9, type: 'USES' }
+        { fromId: 8, toId: 9, type: 'USES', displayFromId: 8, displayToId: 9 }
     ]
 };
 
@@ -214,8 +214,8 @@ function drawLine(x0, y0, x1, y1) {
 }
 
 function drawEdge(edge) {
-    const fromNode = findNodeById(edge.fromId);
-    const toNode = findNodeById(edge.toId);
+    const fromNode = findNodeById(edge.displayFromId);
+    const toNode = findNodeById(edge.displayToId);
     if (fromNode && toNode) {
         const lineStart = { x: fromNode.x + fromNode.width / 2, y: fromNode.y + fromNode.height / 2 };
         const lineEnd = { x: toNode.x + toNode.width / 2, y: toNode.y + toNode.height / 2 };
@@ -245,45 +245,76 @@ function findNodeByIdRecursive(children, id) {
     return null;
 }
 
-// Calculate the intersection of the line with the rectangle's edges
-function getIntersectionPoint(rect, targetRect) {
-    const cx = rect.x + rect.width / 2;
-    const cy = rect.y + rect.height / 2;
-    const tx = targetRect.x + targetRect.width / 2;
-    const ty = targetRect.y + targetRect.height / 2;
+function findNextVisibleAncestor(node) {
+    let currentNode = node;
+    while (currentNode && !currentNode.visible) {
+        currentNode = currentNode.parent;
+    }
+    return currentNode;
+}
 
-    const dx = tx - cx;
-    const dy = ty - cy;
+function toggleVisibility(node, visibility) {
+    if (!node._visibilityStack) {
+        node._visibilityStack = [];
+    }
 
-    // Potential intersection points with the rectangle's edges
-    const points = [
-        { x: rect.x, y: cy + (rect.x - cx) * dy / dx }, // left edge
-        { x: rect.x + rect.width, y: cy + (rect.x + rect.width - cx) * dy / dx }, // right edge
-        { x: cx + (rect.y - cy) * dx / dy, y: rect.y }, // top edge
-        { x: cx + (rect.y + rect.height - cy) * dx / dy, y: rect.y + rect.height } // bottom edge
-    ];
+    if (node.children && node.children.length > 0) {
+        if (typeof visibility === 'undefined') {
+            visibility = !node.children[0].visible;
+        }
 
-    // Filter points that lie within the bounds of the rectangle
-    const validPoints = points.filter(point =>
-        point.x >= rect.x && point.x <= rect.x + rect.width &&
-        point.y >= rect.y && point.y <= rect.y + rect.height
-    );
-
-    // Find the closest valid point to the target rectangle
-    let closestPoint = validPoints[0];
-    let minDistance = Math.sqrt(Math.pow(closestPoint.x - targetRect.x, 2) + Math.pow(closestPoint.y - targetRect.y, 2));
-    for (let i = 1; i < validPoints.length; i++) {
-        const distance = Math.sqrt(Math.pow(validPoints[i].x - targetRect.x, 2) + Math.pow(validPoints[i].y - targetRect.y, 2));
-        if (distance < minDistance) {
-            closestPoint = validPoints[i];
-            minDistance = distance;
+        if (visibility) {
+            // Restore previous visibility states
+            const visibilityState = node._visibilityStack.pop();
+            node.children.forEach((child, index) => {
+                const savedState = visibilityState.find(state => state.id === child.id);
+                child.visible = savedState ? savedState.visible : true;
+                if (child.visible) {
+                    toggleVisibility(child, child.visible); // Recursively show descendants if they were visible
+                }
+            });
+        } else {
+            // Store current visibility states and hide children
+            const visibilityState = node.children.map(child => ({
+                id: child.id,
+                visible: child.visible
+            }));
+            node._visibilityStack.push(visibilityState);
+            node.children.forEach(child => {
+                child.visible = false;
+                toggleVisibility(child, false); // Recursively hide descendants
+            });
         }
     }
 
-    return closestPoint;
+    // Update edges
+    updateEdges();
 }
 
-// Update hover state and redraw canvas
+function updateEdges() {
+    data.edges.forEach(edge => {
+        const fromNode = findNodeById(edge.fromId);
+        const toNode = findNodeById(edge.toId);
+
+        const nextVisibleFrom = findNextVisibleAncestor(fromNode);
+        const nextVisibleTo = findNextVisibleAncestor(toNode);
+
+        if (nextVisibleFrom && nextVisibleTo) {
+            edge.displayFromId = nextVisibleFrom.id;
+            edge.displayToId = nextVisibleTo.id;
+        }
+    });
+}
+
+// Initial layout setup
+initialLayout();
+updateEdges();
+redrawCanvas();
+window.addEventListener("resize", (event) => {
+    redrawCanvas();
+});
+
+// Event listeners
 canvas.addEventListener('mousemove', function(event) {
     const trueX = toTrueX(event.pageX);
     const trueY = toTrueY(event.pageY);
@@ -348,39 +379,3 @@ function clearHoverState(nodes) {
         }
     });
 }
-
-function toggleVisibility(node) {
-    if (!node._visibilityStack) {
-        node._visibilityStack = [];
-    }
-
-    if (node.children && node.children.length > 0) {
-        const currentState = node.children[0].visible;
-
-        if (currentState) {
-            // If children are currently visible, store their states and hide them
-            const visibilityState = node.children.map(child => child.visible);
-            node._visibilityStack.push(visibilityState);
-            node.children.forEach(child => {
-                child.visible = false;
-                toggleVisibility(child); // Recursively hide descendants
-            });
-        } else {
-            // If children are currently hidden, restore their previous states
-            const visibilityState = node._visibilityStack.pop();
-            node.children.forEach((child, index) => {
-                child.visible = visibilityState[index];
-                toggleVisibility(child, child.visible); // Recursively show descendants if they were visible
-            });
-        }
-    }
-}
-
-
-
-// Initial layout setup
-initialLayout();
-redrawCanvas();
-window.addEventListener("resize", (event) => {
-    redrawCanvas();
-});
