@@ -12,7 +12,7 @@ const resizeMargin = 10; // Margin around the rectangle to detect resizing
 let lineThickness = 1;
 let lineColor = '#000';
 let lineType = 'solid'; // 'solid' or 'dotted'
-let lineStyle = 'orthogonal'; // 'straight' or 'orthogonal'
+let lineStyle = 'straight'; // 'straight' or 'orthogonal'
 
 // Get our canvas element
 const canvas = document.getElementById("canvas");
@@ -234,19 +234,57 @@ function drawOrthogonalLine(x0, y0, x1, y1, fromNode, toNode) {
     context.beginPath();
     context.moveTo(start.x, start.y);
 
-    // Determine the direction to draw the orthogonal line
-    if (start.x !== end.x) {
+    // Determine the segments for the orthogonal line
+    if (start.x === fromNode.x || start.x === fromNode.x + fromNode.width) {
+        // Start point is on the left or right edge
+        context.lineTo((start.x + end.x) / 2,start.y);
+        context.lineTo((start.x + end.x) / 2,end.y);
+    } else {
+        // Start point is on the top or bottom edge
         context.lineTo(start.x, (start.y + end.y) / 2);
         context.lineTo(end.x, (start.y + end.y) / 2);
-    } else {
-        context.lineTo((start.x + end.x) / 2, start.y);
-        context.lineTo((start.x + end.x) / 2, end.y);
     }
 
     context.lineTo(end.x, end.y);
     context.strokeStyle = lineColor;
     context.lineWidth = lineThickness;
     context.stroke();
+}
+
+function getOrthogonalPointWithNodeBorder(x0, y0, x1, y1, node) {
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+
+    // Calculate potential exit points
+    const points = [
+        { x: node.x + node.width / 2, y: node.y }, // top center
+        { x: node.x + node.width / 2, y: node.y + node.height }, // bottom center
+        { x: node.x, y: node.y + node.height / 2 }, // left center
+        { x: node.x + node.width, y: node.y + node.height / 2 } // right center
+    ];
+
+    // Calculate distances to (x1, y1)
+    const distances = points.map(point => Math.abs(point.x - x1) + Math.abs(point.y - y1));
+
+    // Find the point with the minimum distance
+    const minDistanceIndex = distances.indexOf(Math.min(...distances));
+    return points[minDistanceIndex];
+}
+
+function getPosition(point, node) {
+    if (point.x === node.x) {
+        return 'left';
+    } else if (point.x === node.x + node.width) {
+        return 'right';
+    } else if (point.y === node.y) {
+        return 'top';
+    } else if (point.y === node.y + node.height) {
+        return 'bottom';
+    } else {
+        return 'unknown';
+    }
 }
 
 function drawEdge(edge) {
@@ -256,32 +294,6 @@ function drawEdge(edge) {
         const lineStart = { x: fromNode.x + fromNode.width / 2, y: fromNode.y + fromNode.height / 2 };
         const lineEnd = { x: toNode.x + toNode.width / 2, y: toNode.y + toNode.height / 2 };
         drawLine(toScreenX(lineStart.x), toScreenY(lineStart.y), toScreenX(lineEnd.x), toScreenY(lineEnd.y), fromNode, toNode);
-    }
-}
-
-function getOrthogonalPointWithNodeBorder(x0, y0, x1, y1, node) {
-    const dx = x1 - x0;
-    const dy = y1 - y0;
-
-    // Determine which side of the node the point should be on
-    if (Math.abs(dx) > Math.abs(dy)) {
-        // Horizontal line
-        if (dx > 0) {
-            // Right side
-            return { x: node.x + node.width, y: y0 };
-        } else {
-            // Left side
-            return { x: node.x, y: y0 };
-        }
-    } else {
-        // Vertical line
-        if (dy > 0) {
-            // Bottom side
-            return { x: x0, y: node.y + node.height };
-        } else {
-            // Top side
-            return { x: x0, y: node.y };
-        }
     }
 }
 
@@ -449,9 +461,8 @@ canvas.addEventListener('mousemove', function(event) {
 
     if (hoveredNode) {
         hoveredNode.hover = true;
+        redrawCanvas();
     }
-
-    redrawCanvas();
 });
 
 canvas.addEventListener('click', function(event) {
@@ -475,7 +486,6 @@ function handleDoubleClick(event) {
 
     if (clickedNode) {
         toggleVisibility(clickedNode);
-        console.log("Updated Data Structure:", data); // Log the updated data structure
     }
 
     redrawCanvas();
