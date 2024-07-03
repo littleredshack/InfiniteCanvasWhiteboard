@@ -198,7 +198,10 @@ function drawResizeHandle(x, y, width, height, radius) {
     context.stroke();
 }
 
-function drawLine(x0, y0, x1, y1) {
+function drawLine(x0, y0, x1, y1, fromNode, toNode) {
+    const start = getIntersectionPointWithNodeBorder(x0, y0, x1, y1, fromNode);
+    const end = getIntersectionPointWithNodeBorder(x1, y1, x0, y0, toNode);
+
     if (lineType === 'dotted') {
         context.setLineDash([5, 5]);
     } else {
@@ -206,8 +209,8 @@ function drawLine(x0, y0, x1, y1) {
     }
 
     context.beginPath();
-    context.moveTo(x0, y0);
-    context.lineTo(x1, y1);
+    context.moveTo(start.x, start.y);
+    context.lineTo(end.x, end.y);
     context.strokeStyle = lineColor;
     context.lineWidth = lineThickness;
     context.stroke();
@@ -219,8 +222,71 @@ function drawEdge(edge) {
     if (fromNode && toNode) {
         const lineStart = { x: fromNode.x + fromNode.width / 2, y: fromNode.y + fromNode.height / 2 };
         const lineEnd = { x: toNode.x + toNode.width / 2, y: toNode.y + toNode.height / 2 };
-        drawLine(toScreenX(lineStart.x), toScreenY(lineStart.y), toScreenX(lineEnd.x), toScreenY(lineEnd.y));
+        drawLine(toScreenX(lineStart.x), toScreenY(lineStart.y), toScreenX(lineEnd.x), toScreenY(lineEnd.y), fromNode, toNode);
     }
+}
+
+function getIntersectionPointWithNodeBorder(x0, y0, x1, y1, node) {
+    const nodeCenterX = node.x + node.width / 2;
+    const nodeCenterY = node.y + node.height / 2;
+    const halfWidth = node.width / 2;
+    const halfHeight = node.height / 2;
+    const dx = x1 - x0;
+    const dy = y1 - y0;
+    let t;
+
+    // Check intersection with each side of the rectangle
+    if (dx !== 0) {
+        t = (halfWidth - Math.abs(nodeCenterX - x0)) / Math.abs(dx);
+        if (t >= 0 && t <= 1) {
+            const ix = x0 + t * dx;
+            const iy = y0 + t * dy;
+            if (iy >= node.y && iy <= node.y + node.height) {
+                return adjustForRoundedCorners(ix, iy, node);
+            }
+        }
+    }
+
+    if (dy !== 0) {
+        t = (halfHeight - Math.abs(nodeCenterY - y0)) / Math.abs(dy);
+        if (t >= 0 && t <= 1) {
+            const ix = x0 + t * dx;
+            const iy = y0 + t * dy;
+            if (ix >= node.x && ix <= node.x + node.width) {
+                return adjustForRoundedCorners(ix, iy, node);
+            }
+        }
+    }
+
+    return { x: x0, y: y0 }; // Fallback if no intersection is found
+}
+
+function adjustForRoundedCorners(x, y, node) {
+    const radius = node.radius;
+    const left = node.x + radius;
+    const right = node.x + node.width - radius;
+    const top = node.y + radius;
+    const bottom = node.y + node.height - radius;
+
+    if (x < left && y < top) {
+        return getIntersectionWithCircle(node.x + radius, node.y + radius, radius, x, y);
+    } else if (x > right && y < top) {
+        return getIntersectionWithCircle(node.x + node.width - radius, node.y + radius, radius, x, y);
+    } else if (x < left && y > bottom) {
+        return getIntersectionWithCircle(node.x + radius, node.y + node.height - radius, radius, x, y);
+    } else if (x > right && y > bottom) {
+        return getIntersectionWithCircle(node.x + node.width - radius, node.y + node.height - radius, radius, x, y);
+    } else {
+        return { x, y };
+    }
+}
+
+function getIntersectionWithCircle(cx, cy, radius, x, y) {
+    const dx = x - cx;
+    const dy = y - cy;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const scale = radius / distance;
+    return { x: cx + dx * scale, y: cy + dy * scale };
 }
 
 function findNodeById(id) {
