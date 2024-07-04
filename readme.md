@@ -7,7 +7,7 @@ This JavaScript application creates a visualization of nested nodes on an HTML c
 - **Zooming and Panning**: The canvas supports zooming in and out based on mouse wheel interactions, and panning is supported through right-click dragging.
 - **Dragging and Resizing Nodes**: Nodes can be moved within their parent node's boundaries. Resizing nodes are allowed by dragging their bottom-right corner.
 - **Visibility Toggle**: Double-clicking on a node toggles the visibility of its descendants.
-- **Edge Drawing**: Supports straight and orthogonal line styles, ensuring connections between nodes are visually clear and exit/enter nodes at 90 degrees to the border.
+- **Edge Drawing**: Supports straight and orthogonal line styles, ensuring connections between nodes are visually clear and exit/enter nodes at 90 degrees to the border. Additionally, orthogonal lines avoid intersecting immediate neighbor nodes.
 
 ## Detailed Implementation
 
@@ -28,7 +28,7 @@ This JavaScript application creates a visualization of nested nodes on an HTML c
 
 ### Edge Management:
 - **Edge Calculation**: The `updateEdges` function updates the edges based on the visibility of nodes and their ancestors.
-- **Edge Drawing**: The `drawEdge` function ensures lines end at the border of the nodes, using either straight or orthogonal lines based on the configuration.
+- **Edge Drawing**: The `drawEdge` function ensures lines end at the border of the nodes, using either straight or orthogonal lines based on the configuration. Orthogonal lines avoid intersecting immediate neighbor nodes.
 
 ### `mouse.js`
 - **State Management**: Variables track mouse states (`leftMouseDown`, `rightMouseDown`) and selected nodes for dragging and resizing.
@@ -73,6 +73,7 @@ This JavaScript application creates a visualization of nested nodes on an HTML c
 **Edge Management**:
 - Ensured edges update dynamically based on the visibility of nodes.
 - Added support for straight and orthogonal line styles.
+- Improved orthogonal line drawing to avoid intersecting immediate neighbor nodes.
 
 ### Sample Code Snippets
 

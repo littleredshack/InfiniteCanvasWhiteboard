@@ -12,7 +12,7 @@ const resizeMargin = 10; // Margin around the rectangle to detect resizing
 let lineThickness = 1;
 let lineColor = '#000';
 let lineType = 'solid'; // 'solid' or 'dotted'
-let lineStyle = 'straight'; // 'straight' or 'orthogonal'
+let lineStyle = 'orthogonal'; // 'straight' or 'orthogonal'
 
 // Get our canvas element
 const canvas = document.getElementById("canvas");
