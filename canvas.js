@@ -247,6 +247,7 @@ function drawLine(x0, y0, x1, y1, fromNode, toNode) {
         context.stroke();
     }
 }
+
 ///
 function drawOrthogonalLine(x0, y0, x1, y1, fromNode, toNode) {
     const start = getOrthogonalPointWithNodeBorder(x0, y0, x1, y1, fromNode);
@@ -544,7 +545,7 @@ window.addEventListener("resize", (event) => {
 });
 
 // Event listeners
-canvas.addEventListener('mousemove', function(event) {
+canvas.addEventListener('mousemove', debounce(function(event) {
     const trueX = toTrueX(event.pageX);
     const trueY = toTrueY(event.pageY);
 
@@ -555,7 +556,7 @@ canvas.addEventListener('mousemove', function(event) {
         hoveredNode.hover = true;
         redrawCanvas();
     }
-});
+}, 50)); // Debounce with 50ms delay
 
 canvas.addEventListener('click', function(event) {
     if (clickTimer) {
@@ -605,4 +606,17 @@ function clearHoverState(nodes) {
             clearHoverState(node.children);
         }
     });
+}
+
+// Debounce function to limit the rate at which a function can fire.
+function debounce(func, wait) {
+    let timeout;
+    return function(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }
