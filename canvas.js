@@ -247,7 +247,7 @@ function drawLine(x0, y0, x1, y1, fromNode, toNode) {
         context.stroke();
     }
 }
-
+///
 function drawOrthogonalLine(x0, y0, x1, y1, fromNode, toNode) {
     const start = getOrthogonalPointWithNodeBorder(x0, y0, x1, y1, fromNode);
     const end = getOrthogonalPointWithNodeBorder(x1, y1, x0, y0, toNode);
@@ -262,27 +262,66 @@ function drawOrthogonalLine(x0, y0, x1, y1, fromNode, toNode) {
     context.moveTo(start.x, start.y);
 
     // Determine the segments for the orthogonal line
-    if (start.x === fromNode.x || start.x === fromNode.x + fromNode.width) {
-        // Start point is on the left or right edge
-        context.lineTo((start.x + end.x) / 2,start.y);
-        context.lineTo((start.x + end.x) / 2,end.y);
-    } else {
-        // Start point is on the top or bottom edge
-        context.lineTo(start.x, (start.y + end.y) / 2);
-        context.lineTo(end.x, (start.y + end.y) / 2);
+    if (start.x === fromNode.x + fromNode.width / 2) { // Start from top or bottom
+        if (start.y === fromNode.y) { // From top center
+            context.lineTo(start.x, start.y - 10); // Move up
+            if (end.x === toNode.x + toNode.width / 2) { // End at top or bottom
+                context.lineTo(start.x, (start.y + end.y) / 2); // Move vertically halfway
+                context.lineTo(end.x, (start.y + end.y) / 2); // Move horizontally
+                context.lineTo(end.x, end.y); // Move vertically to the end
+            } else { // End at left or right
+                context.lineTo(start.x, end.y); // Move vertically to the end
+                context.lineTo(end.x, end.y); // Move horizontally to the end
+            }
+        } else { // From bottom center
+            context.lineTo(start.x, start.y + 10); // Move down
+            if (end.x === toNode.x + toNode.width / 2) { // End at top or bottom
+                context.lineTo(start.x, (start.y + end.y) / 2); // Move vertically halfway
+                context.lineTo(end.x, (start.y + end.y) / 2); // Move horizontally
+                context.lineTo(end.x, end.y); // Move vertically to the end
+            } else { // End at left or right
+                context.lineTo(start.x, end.y); // Move vertically to the end
+                context.lineTo(end.x, end.y); // Move horizontally to the end
+            }
+        }
+    } else { // Start from left or right
+        if (start.x === fromNode.x) { // From left center
+            context.lineTo(start.x - 10, start.y); // Move left
+            if (end.y === toNode.y + toNode.height / 2) { // End at left or right
+                context.lineTo((start.x + end.x) / 2, start.y); // Move horizontally halfway
+                context.lineTo((start.x + end.x) / 2, end.y); // Move vertically
+                context.lineTo(end.x, end.y); // Move horizontally to the end
+            } else { // End at top or bottom
+                context.lineTo(end.x, start.y); // Move horizontally to the end
+                context.lineTo(end.x, end.y); // Move vertically to the end
+            }
+        } else { // From right center
+            context.lineTo(start.x + 10, start.y); // Move right
+            if (end.y === toNode.y + toNode.height / 2) { // End at left or right
+                context.lineTo((start.x + end.x) / 2, start.y); // Move horizontally halfway
+                context.lineTo((start.x + end.x) / 2, end.y); // Move vertically
+                context.lineTo(end.x, end.y); // Move horizontally to the end
+            } else { // End at top or bottom
+                context.lineTo(end.x, start.y); // Move horizontally to the end
+                context.lineTo(end.x, end.y); // Move vertically to the end
+            }
+        }
     }
 
-    context.lineTo(end.x, end.y);
     context.strokeStyle = lineColor;
     context.lineWidth = lineThickness;
     context.stroke();
 }
 
+///
+
 function getOrthogonalPointWithNodeBorder(x0, y0, x1, y1, node) {
     const dx = x1 - x0;
     const dy = y1 - y0;
-    const absDx = Math.abs(dx);
-    const absDy = Math.abs(dy);
+
+    // Get siblings if available
+    const parentNode = node.parent;
+    const siblings = parentNode ? parentNode.children.filter(sibling => sibling.id !== node.id) : [];
 
     // Calculate potential exit points
     const points = [
@@ -292,12 +331,53 @@ function getOrthogonalPointWithNodeBorder(x0, y0, x1, y1, node) {
         { x: node.x + node.width, y: node.y + node.height / 2 } // right center
     ];
 
+    // Filter points to avoid overlap with siblings
+    const filteredPoints = points.filter(point => !siblings.some(sibling => orthogonalWouldIntersect(point, sibling, x1, y1)));
+
     // Calculate distances to (x1, y1)
-    const distances = points.map(point => Math.abs(point.x - x1) + Math.abs(point.y - y1));
+    const distances = filteredPoints.map(point => Math.abs(point.x - x1) + Math.abs(point.y - y1));
 
     // Find the point with the minimum distance
     const minDistanceIndex = distances.indexOf(Math.min(...distances));
-    return points[minDistanceIndex];
+    return filteredPoints[minDistanceIndex];
+}
+
+// Helper function to check if an orthogonal line from a point to (x1, y1) would intersect with a sibling
+function orthogonalWouldIntersect(point, sibling, x1, y1) {
+    // Check the horizontal and vertical segments separately
+    const horizontalSegment = {
+        x0: Math.min(point.x, x1),
+        x1: Math.max(point.x, x1),
+        y: point.y
+    };
+
+    const verticalSegment = {
+        y0: Math.min(point.y, y1),
+        y1: Math.max(point.y, y1),
+        x: x1
+    };
+
+    return (
+        doesIntersect(horizontalSegment, sibling) ||
+        doesIntersect(verticalSegment, sibling)
+    );
+}
+
+// Helper function to check if a line segment intersects with a sibling node
+function doesIntersect(segment, sibling) {
+    if ('x' in segment) { // vertical segment
+        return (
+            segment.x > sibling.x &&
+            segment.x < sibling.x + sibling.width &&
+            ((segment.y0 < sibling.y && segment.y1 > sibling.y) || (segment.y0 > sibling.y && segment.y1 < sibling.y + sibling.height))
+        );
+    } else { // horizontal segment
+        return (
+            segment.y > sibling.y &&
+            segment.y < sibling.y + sibling.height &&
+            ((segment.x0 < sibling.x && segment.x1 > sibling.x) || (segment.x0 > sibling.x && segment.x1 < sibling.x + sibling.width))
+        );
+    }
 }
 
 function getPosition(point, node) {
