@@ -12,7 +12,7 @@ const resizeMargin = 10; // Margin around the rectangle to detect resizing
 let lineThickness = 1;
 let lineColor = '#000';
 let lineType = 'solid'; // 'solid' or 'dotted'
-let lineStyle = 'orthogonal'; // 'straight' or 'orthogonal'
+let lineStyle = 'straight'; // 'straight' or 'orthogonal'
 
 // Get our canvas element
 const canvas = document.getElementById("canvas");
@@ -25,29 +25,29 @@ document.oncontextmenu = function () {
 
 // Define data with children and names (without width, height, and radius)
 const data = {
-    nodes: [
+    "nodes": [
         {
-            id: 1, x: 100, y: 100, name: 'Node 1', children: [
-                { id: 2, x: 120, y: 120, name: 'Node 2', children: [] },
-                { id: 3, x: 200, y: 150, name: 'Node 3', children: [
-                    { id: 7, x: 220, y: 170, name: 'Node 7', children: [
-                        { id: 8, x: 230, y: 180, name: 'Node 8', children: [] },
-                        { id: 10, x: 310, y: 180, name: 'Node 10', children: [] }
+            "id": 1, "x": 100, "y": 100, "name": "Node 1", "children": [
+                { "id": 2, "x": 120, "y": 120, "name": "Node 2", "children": [] },
+                { "id": 3, "x": 200, "y": 150, "name": "Node 3", "children": [
+                    { "id": 7, "x": 220, "y": 170, "name": "Node 7", "children": [
+                        { "id": 8, "x": 230, "y": 180, "name": "Node 8", "children": [] },
+                        { "id": 10, "x": 310, "y": 180, "name": "Node 10", "children": [] }
                     ] }
                 ] }
             ]
         },
         {
-            id: 4, x: 400, y: 300, name: 'Node 4', children: [
-                { id: 5, x: 420, y: 320, name: 'Node 5', children: [
-                    { id: 9, x: 430, y: 330, name: 'Node 9', children: [] }
+            "id": 4, "x": 400, "y": 300, "name": "Node 4", "children": [
+                { "id": 5, "x": 420, "y": 320, "name": "Node 5", "children": [
+                    { "id": 9, "x": 430, "y": 330, "name": "Node 9", "children": [] }
                 ] },
-                { id: 6, x: 500, y: 350, name: 'Node 6', children: [] }
+                { "id": 6, "x": 500, "y": 350, "name": "Node 6", "children": [] }
             ]
         }
     ],
-    edges: [
-        { fromId: 8, toId: 9, type: 'USES', displayFromId: 8, displayToId: 9 }
+    "edges": [
+        { "fromId": 8, "toId": 9, "type": "USES", "displayFromId": 8, "displayToId": 9 }
     ]
 };
 
@@ -180,7 +180,6 @@ function redrawCanvas() {
     // Draw edges
     data.edges.forEach(edge => drawEdge(edge));
 
-    // Additional logic for drawing connections, if necessary
 }
 
 // Drawing functions
