@@ -1,0 +1,211 @@
+{
+    "nodes": [
+        {
+            "unique_id": "UUID1",
+            "name": "us-west-2",
+            "ID": "b699f458-d06b-40e3-bf21-07bab26e6f23",
+            "id": 78,
+            "children": [
+                {
+                    "unique_id": "UUID2",
+                    "name": "VPC Main",
+                    "ID": "22722555-ef25-4672-b4e9-de8bc1231de6",
+                    "id": 79,
+                    "children": [
+                        {
+                            "unique_id": "UUID3",
+                            "name": "Public Subnet 0",
+                            "ID": "097b4298-5f2e-4c2b-b254-e50e4d6b64c0",
+                            "id": 80,
+                            "children": [
+                                {
+                                    "unique_id": "UUID4",
+                                    "name": "EC2 Instance 0",
+                                    "ID": "f0861b6e-506e-42a9-b70f-df3b2c9433f8",
+                                    "id": 81,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "unique_id": "UUID5",
+                            "name": "Public Subnet 1",
+                            "ID": "e9c931a3-bc9d-4289-a903-14fb06cac3ff",
+                            "id": 82,
+                            "children": [
+                                {
+                                    "unique_id": "UUID6",
+                                    "name": "EC2 Instance 1",
+                                    "ID": "8b7f4f44-05b7-4174-a444-0eaf3803b505",
+                                    "id": 83,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "unique_id": "UUID7",
+                            "name": "Private Subnet 0",
+                            "ID": "895e3a86-6125-4b4a-bf03-cbef8b4af620",
+                            "id": 84,
+                            "children": [
+                                {
+                                    "unique_id": "UUID8",
+                                    "name": "RDS Instance 0",
+                                    "ID": "ad88edf2-44bf-4738-9255-e38287d78650",
+                                    "id": 85,
+                                    "children": []
+                                }
+                            ]
+                        },
+                        {
+                            "unique_id": "UUID9",
+                            "name": "Private Subnet 1",
+                            "ID": "bcb1048d-5361-4964-8a5b-9c8c3f1d041f",
+                            "id": 86,
+                            "children": [
+                                {
+                                    "unique_id": "UUID10",
+                                    "name": "RDS Instance 1",
+                                    "ID": "cc9fff3b-4b63-4b1b-8281-f72d8cc6a834",
+                                    "id": 87,
+                                    "children": []
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "unique_id": "UUID11",
+                    "name": "Main Load Balancer",
+                    "ID": "1daa7d92-6d80-4770-989b-11e80133f883",
+                    "id": 88,
+                    "children": []
+                },
+                {
+                    "unique_id": "UUID12",
+                    "name": "Main Auto Scaling Group",
+                    "ID": "49c4592c-02b6-44ef-9f27-3924fb0fbd29",
+                    "id": 89,
+                    "children": [
+                        {
+                            "unique_id": "UUID14",
+                            "name": "EC2 Instance 2",
+                            "ID": "3b029446-25dc-423f-9b29-bf8d24b50acf",
+                            "id": 90,
+                            "children": []
+                        },
+                        {
+                            "unique_id": "UUID15",
+                            "name": "EC2 Instance 3",
+                            "ID": "3de88fa0-5cfd-4d65-886a-b56a664a30b4",
+                            "id": 91,
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "unique_id": "UUID13",
+                    "name": "Main Launch Configuration",
+                    "ID": "1f51917e-e118-4483-b5d9-e96dd8899654",
+                    "id": 92,
+                    "children": []
+                },
+                {
+                    "unique_id": "UUID16",
+                    "name": "Mobile Banking App Bucket",
+                    "ID": "88952500-9d8b-43a9-8105-f9c3985691d6",
+                    "id": 93,
+                    "children": []
+                },
+                {
+                    "unique_id": "UUID17",
+                    "name": "Main CloudFront Distribution",
+                    "ID": "ea76dff7-fd3b-4402-943a-d4801505f717",
+                    "id": 94,
+                    "children": []
+                },
+                {
+                    "unique_id": "UUID18",
+                    "name": "Banking User",
+                    "ID": "eafeca59-ec58-4d7e-b288-092dafd224af",
+                    "id": 95,
+                    "children": []
+                }
+            ]
+        },
+        {
+            "ctUpdate": "2024-07-09T19:22:50.868000000+00:00",
+            "ctInsert": "2024-07-09T19:22:30.736000000+00:00",
+            "layout": "{\"containers\":[{\"x\":-2210.66875,\"y\":-3652.8025,\"width\":7210.66875,\"height\":8652.8025,\"value\":\"b699f458-d06b-40e3-bf21-07bab26e6f23\",\"id\":\"b699f458-d06b-40e3-bf21-07bab26e6f23\",\"fill\":false,\"layout\":\"free\",\"childs\":[{\"x\":15,\"y\":15,\"width\":967.875,\"height\":1161.45,\"value\":\"22722555-ef25-4672-b4e9-de8bc1231de6\",\"id\":\"22722555-ef25-4672-b4e9-de8bc1231de6\",\"fill\":false,\"layout\":\"free\",\"childs\":[{\"x\":15,\"y\":15,\"width\":217.5,\"height\":261,\"value\":\"097b4298-5f2e-4c2b-b254-e50e4d6b64c0\",\"id\":\"097b4298-5f2e-4c2b-b254-e50e4d6b64c0\",\"fill\":false,\"layout\":\"free\",\"childs\":[{\"x\":15,\"y\":15,\"width\":150,\"height\":180,\"value\":\"f0861b6e-506e-42a9-b70f-df3b2c9433f8\",\"id\":\"f0861b6e-506e-42a9-b70f-df3b2c9433f8\",\"fill\":false,\"layout\":\"free\",\"childs\":[]}]},{\"x\":262.5,\"y\":15,\"width\":217.5,\"height\":261,\"value\":\"e9c931a3-bc9d-4289-a903-14fb06cac3ff\",\"id\":\"e9c931a3-bc9d-4289-a903-14fb06cac3ff\",\"fill\":false,\"layout\":\"free\",\"childs\":[{\"x\":15,\"y\":15,\"width\":150,\"height\":180,\"value\":\"8b7f4f44-05b7-4174-a444-0eaf3803b505\",\"id\":\"8b7f4f44-05b7-4174-a444-0eaf3803b505\",\"fill\":false,\"layout\":\"free\",\"childs\":[]}]},{\"x\":510,\"y\":15,\"width\":217.5,\"height\":261,\"value\":\"895e3a86-6125-4b4a-bf03-cbef8b4af620\",\"id\":\"895e3a86-6125-4b4a-bf03-cbef8b4af620\",\"fill\":false,\"layout\":\"free\",\"childs\":[{\"x\":15,\"y\":15,\"width\":150,\"height\":180,\"value\":\"ad88edf2-44bf-4738-9255-e38287d78650\",\"id\":\"ad88edf2-44bf-4738-9255-e38287d78650\",\"fill\":false,\"layout\":\"free\",\"childs\":[]}]},{\"x\":15,\"y\":306,\"width\":217.5,\"height\":261,\"value\":\"bcb1048d-5361-4964-8a5b-9c8c3f1d041f\",\"id\":\"bcb1048d-5361-4964-8a5b-9c8c3f1d041f\",\"fill\":false,\"layout\":\"free\",\"childs\":[{\"x\":15,\"y\":15,\"width\":150,\"height\":180,\"value\":\"cc9fff3b-4b63-4b1b-8281-f72d8cc6a834\",\"id\":\"cc9fff3b-4b63-4b1b-8281-f72d8cc6a834\",\"fill\":false,\"layout\":\"free\",\"childs\":[]}]}]},{\"x\":1012.875,\"y\":15,\"width\":150,\"height\":180,\"value\":\"1daa7d92-6d80-4770-989b-11e80133f883\",\"id\":\"1daa7d92-6d80-4770-989b-11e80133f883\",\"fill\":false,\"layout\":\"free\",\"childs\":[]},{\"x\":1034,\"y\":431,\"width\":367.5,\"height\":441.00000000000006,\"value\":\"49c4592c-02b6-44ef-9f27-3924fb0fbd29\",\"id\":\"49c4592c-02b6-44ef-9f27-3924fb0fbd29\",\"fill\":false,\"layout\":\"free\",\"childs\":[{\"x\":15,\"y\":15,\"width\":150,\"height\":180,\"value\":\"3b029446-25dc-423f-9b29-bf8d24b50acf\",\"id\":\"3b029446-25dc-423f-9b29-bf8d24b50acf\",\"fill\":false,\"layout\":\"free\",\"childs\":[]},{\"x\":195,\"y\":15,\"width\":150,\"height\":180,\"value\":\"3de88fa0-5cfd-4d65-886a-b56a664a30b4\",\"id\":\"3de88fa0-5cfd-4d65-886a-b56a664a30b4\",\"fill\":false,\"layout\":\"free\",\"childs\":[]}]},{\"x\":1590.375,\"y\":15,\"width\":150,\"height\":180,\"value\":\"1f51917e-e118-4483-b5d9-e96dd8899654\",\"id\":\"1f51917e-e118-4483-b5d9-e96dd8899654\",\"fill\":false,\"layout\":\"free\",\"childs\":[]},{\"x\":1770.375,\"y\":15,\"width\":150,\"height\":180,\"value\":\"88952500-9d8b-43a9-8105-f9c3985691d6\",\"id\":\"88952500-9d8b-43a9-8105-f9c3985691d6\",\"fill\":false,\"layout\":\"free\",\"childs\":[]},{\"x\":1950.375,\"y\":15,\"width\":150,\"height\":180,\"value\":\"ea76dff7-fd3b-4402-943a-d4801505f717\",\"id\":\"ea76dff7-fd3b-4402-943a-d4801505f717\",\"fill\":false,\"layout\":\"free\",\"childs\":[]},{\"x\":2130.375,\"y\":15,\"width\":150,\"height\":180,\"value\":\"eafeca59-ec58-4d7e-b288-092dafd224af\",\"id\":\"eafeca59-ec58-4d7e-b288-092dafd224af\",\"fill\":false,\"layout\":\"free\",\"childs\":[]}]}],\"container_relations\":[\"CONTAINS\"],\"direction\":1}",
+            "ID": "Project",
+            "id": 97,
+            "children": []
+        }
+    ],
+    "edges": [
+        {
+            "port": "5432",
+            "fromId": 81,
+            "toId": 85,
+            "type": "tcp",
+            "displayFromId": 81,
+            "displayToId": 85
+        },
+        {
+            "port": "5432",
+            "fromId": 83,
+            "toId": 87,
+            "type": "tcp",
+            "displayFromId": 83,
+            "displayToId": 87
+        },
+        {
+            "port": "80",
+            "fromId": 88,
+            "toId": 81,
+            "type": "http",
+            "displayFromId": 88,
+            "displayToId": 81
+        },
+        {
+            "port": "80",
+            "fromId": 88,
+            "toId": 83,
+            "type": "http",
+            "displayFromId": 88,
+            "displayToId": 83
+        },
+        {
+            "port": "443",
+            "fromId": 94,
+            "toId": 93,
+            "type": "http",
+            "displayFromId": 94,
+            "displayToId": 93
+        },
+        {
+            "port": "443",
+            "fromId": 95,
+            "toId": 88,
+            "type": "https",
+            "displayFromId": 95,
+            "displayToId": 88
+        },
+        {
+            "port": "80",
+            "fromId": 88,
+            "toId": 90,
+            "type": "http",
+            "displayFromId": 88,
+            "displayToId": 90
+        },
+        {
+            "port": "80",
+            "fromId": 88,
+            "toId": 91,
+            "type": "http",
+            "displayFromId": 88,
+            "displayToId": 91
+        }
+    ]
+}
