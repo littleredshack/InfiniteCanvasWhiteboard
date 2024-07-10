@@ -12,7 +12,7 @@ const resizeMargin = 10; // Margin around the rectangle to detect resizing
 let lineThickness = 1;
 let lineColor = '#000';
 let lineType = 'solid'; // 'solid' or 'dotted'
-let lineStyle = 'straight'; // 'straight' or 'orthogonal'
+let lineStyle = 'orthogonal'; // 'straight' or 'orthogonal'
 
 // Get our canvas element
 const canvas = document.getElementById("canvas");
@@ -247,7 +247,6 @@ function drawLine(x0, y0, x1, y1, fromNode, toNode) {
     }
 }
 
-///
 function drawOrthogonalLine(x0, y0, x1, y1, fromNode, toNode) {
     const start = getOrthogonalPointWithNodeBorder(x0, y0, x1, y1, fromNode);
     const end = getOrthogonalPointWithNodeBorder(x1, y1, x0, y0, toNode);
@@ -259,51 +258,51 @@ function drawOrthogonalLine(x0, y0, x1, y1, fromNode, toNode) {
     }
 
     context.beginPath();
-    context.moveTo(start.x, start.y);
+    context.moveTo(toScreenX(start.x), toScreenY(start.y)); // Convert to screen coordinates
 
     // Determine the segments for the orthogonal line
     if (start.x === fromNode.x + fromNode.width / 2) { // Start from top or bottom
         if (start.y === fromNode.y) { // From top center
-            context.lineTo(start.x, start.y - 10); // Move up
+            context.lineTo(toScreenX(start.x), toScreenY(start.y - 10)); // Move up
             if (end.x === toNode.x + toNode.width / 2) { // End at top or bottom
-                context.lineTo(start.x, (start.y + end.y) / 2); // Move vertically halfway
-                context.lineTo(end.x, (start.y + end.y) / 2); // Move horizontally
-                context.lineTo(end.x, end.y); // Move vertically to the end
+                context.lineTo(toScreenX(start.x), toScreenY((start.y + end.y) / 2)); // Move vertically halfway
+                context.lineTo(toScreenX(end.x), toScreenY((start.y + end.y) / 2)); // Move horizontally
+                context.lineTo(toScreenX(end.x), toScreenY(end.y)); // Move vertically to the end
             } else { // End at left or right
-                context.lineTo(start.x, end.y); // Move vertically to the end
-                context.lineTo(end.x, end.y); // Move horizontally to the end
+                context.lineTo(toScreenX(start.x), toScreenY(end.y)); // Move vertically to the end
+                context.lineTo(toScreenX(end.x), toScreenY(end.y)); // Move horizontally to the end
             }
         } else { // From bottom center
-            context.lineTo(start.x, start.y + 10); // Move down
+            context.lineTo(toScreenX(start.x), toScreenY(start.y + 10)); // Move down
             if (end.x === toNode.x + toNode.width / 2) { // End at top or bottom
-                context.lineTo(start.x, (start.y + end.y) / 2); // Move vertically halfway
-                context.lineTo(end.x, (start.y + end.y) / 2); // Move horizontally
-                context.lineTo(end.x, end.y); // Move vertically to the end
+                context.lineTo(toScreenX(start.x), toScreenY((start.y + end.y) / 2)); // Move vertically halfway
+                context.lineTo(toScreenX(end.x), toScreenY((start.y + end.y) / 2)); // Move horizontally
+                context.lineTo(toScreenX(end.x), toScreenY(end.y)); // Move vertically to the end
             } else { // End at left or right
-                context.lineTo(start.x, end.y); // Move vertically to the end
-                context.lineTo(end.x, end.y); // Move horizontally to the end
+                context.lineTo(toScreenX(start.x), toScreenY(end.y)); // Move vertically to the end
+                context.lineTo(toScreenX(end.x), toScreenY(end.y)); // Move horizontally to the end
             }
         }
     } else { // Start from left or right
         if (start.x === fromNode.x) { // From left center
-            context.lineTo(start.x - 10, start.y); // Move left
+            context.lineTo(toScreenX(start.x - 10), toScreenY(start.y)); // Move left
             if (end.y === toNode.y + toNode.height / 2) { // End at left or right
-                context.lineTo((start.x + end.x) / 2, start.y); // Move horizontally halfway
-                context.lineTo((start.x + end.x) / 2, end.y); // Move vertically
-                context.lineTo(end.x, end.y); // Move horizontally to the end
+                context.lineTo(toScreenX((start.x + end.x) / 2), toScreenY(start.y)); // Move horizontally halfway
+                context.lineTo(toScreenX((start.x + end.x) / 2), toScreenY(end.y)); // Move vertically
+                context.lineTo(toScreenX(end.x), toScreenY(end.y)); // Move horizontally to the end
             } else { // End at top or bottom
-                context.lineTo(end.x, start.y); // Move horizontally to the end
-                context.lineTo(end.x, end.y); // Move vertically to the end
+                context.lineTo(toScreenX(end.x), toScreenY(start.y)); // Move horizontally to the end
+                context.lineTo(toScreenX(end.x), toScreenY(end.y)); // Move vertically to the end
             }
         } else { // From right center
-            context.lineTo(start.x + 10, start.y); // Move right
+            context.lineTo(toScreenX(start.x + 10), toScreenY(start.y)); // Move right
             if (end.y === toNode.y + toNode.height / 2) { // End at left or right
-                context.lineTo((start.x + end.x) / 2, start.y); // Move horizontally halfway
-                context.lineTo((start.x + end.x) / 2, end.y); // Move vertically
-                context.lineTo(end.x, end.y); // Move horizontally to the end
+                context.lineTo(toScreenX((start.x + end.x) / 2), toScreenY(start.y)); // Move horizontally halfway
+                context.lineTo(toScreenX((start.x + end.x) / 2), toScreenY(end.y)); // Move vertically
+                context.lineTo(toScreenX(end.x), toScreenY(end.y)); // Move horizontally to the end
             } else { // End at top or bottom
-                context.lineTo(end.x, start.y); // Move horizontally to the end
-                context.lineTo(end.x, end.y); // Move vertically to the end
+                context.lineTo(toScreenX(end.x), toScreenY(start.y)); // Move horizontally to the end
+                context.lineTo(toScreenX(end.x), toScreenY(end.y)); // Move vertically to the end
             }
         }
     }
@@ -312,8 +311,6 @@ function drawOrthogonalLine(x0, y0, x1, y1, fromNode, toNode) {
     context.lineWidth = lineThickness;
     context.stroke();
 }
-
-///
 
 function getOrthogonalPointWithNodeBorder(x0, y0, x1, y1, node) {
     const dx = x1 - x0;
